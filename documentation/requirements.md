@@ -13,6 +13,7 @@
   * Top Artists
     * Yellow dash and green, red arrows??
   * Top Albums??
+  * Recently played
 * Ratings
   * Tab display for: 
     * Top 50 Artists
