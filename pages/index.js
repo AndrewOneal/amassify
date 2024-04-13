@@ -1,6 +1,6 @@
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import { signOut } from 'next-auth/react';
 
 export default function Home() {
   const {data: session} = useSession();
@@ -32,6 +32,7 @@ export default function Home() {
       `}</style>
       <img src={profileData.images && profileData.images.length > 1 ? profileData.images[1].url : 'default_image_url'} alt="user image" />
       <p>Username: {profileData.display_name}</p>
+      <button className='text-white px-8 py-2 rounded-full bg-green-500 font-bold text-lg' onClick={()=>signOut('spotify', { callbackUrl: "/login"}) }>Logout</button>
     </main>
   );
 }
