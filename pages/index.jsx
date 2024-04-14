@@ -2,6 +2,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 import BottomNav from "../components/bottom_nav.jsx";
+import { useCallback } from "react";
 import Image from "next/image";
 
 export default function Home() {
@@ -9,58 +10,60 @@ export default function Home() {
   const [profileData, setProfileData] = useState([]);
   const [topTracks, setTopTracks] = useState([]);
   const [topArtists, setTopArtists] = useState([]);
-  useEffect(() => {
-    async function getProfileData() {
-      if (session && session.accessToken) {
-        const response = await fetch("https://api.spotify.com/v1/me", {
+  const [timeframe, setTimeframe] = useState("short_term");
+
+  const getProfileData = useCallback(async () => {
+    if (session && session.accessToken) {
+      const response = await fetch("https://api.spotify.com/v1/me", {
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+      });
+      const data = await response.json();
+      setProfileData(data);
+    }
+  }, [session]);
+
+  const getTopTracks = useCallback(async () => {
+    if (session && session.accessToken) {
+      const response = await fetch(
+        `https://api.spotify.com/v1/me/top/tracks?time_range=${timeframe}`,
+        {
           headers: {
             Authorization: `Bearer ${session.accessToken}`,
           },
-        });
-        const data = await response.json();
-        setProfileData(data);
-      }
+        }
+      );
+      const data = await response.json();
+      setTopTracks(data);
     }
+  }, [session, timeframe]);
 
-    async function getTopTracks() {
-      if (session && session.accessToken) {
-        const response = await fetch(
-          "https://api.spotify.com/v1/me/top/tracks?time_range=short_term",
-          {
-            headers: {
-              Authorization: `Bearer ${session.accessToken}`,
-            },
-          }
-        );
-        const data = await response.json();
-        setTopTracks(data);
-      }
+  const getTopArtists = useCallback(async () => {
+    if (session && session.accessToken) {
+      const response = await fetch(
+        `https://api.spotify.com/v1/me/top/artists?time_range=${timeframe}`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        }
+      );
+      const data = await response.json();
+      setTopArtists(data);
     }
+  }, [session, timeframe]);
 
-    async function getTopArtists() {
-      if (session && session.accessToken) {
-        const response = await fetch(
-          "https://api.spotify.com/v1/me/top/artists?time_range=short_term",
-          {
-            headers: {
-              Authorization: `Bearer ${session.accessToken}`,
-            },
-          }
-        );
-        const data = await response.json();
-        setTopArtists(data);
-        console.log(data);
-      }
-    }
-
+  useEffect(() => {
     getProfileData();
     getTopTracks();
     getTopArtists();
-  }, [session]);
+  }, [getProfileData, getTopTracks, getTopArtists]);
+
   return (
     <main className="pt-10 pl-20">
       <div class="text-white text-8xl pb-20 font-bold">Amassify</div>
-      <div className="flex flex-col items-center text-center">
+      <div className="flex flex-col">
         <div className="avatar">
           <div className="w-24 rounded-xl">
             <img
@@ -77,6 +80,19 @@ export default function Home() {
           </p>
         </div>
         <div>
+          <div className="timeframe-selector pt-10">
+            <select
+              value={timeframe}
+              onChange={(e) => {
+                setTimeframe(e.target.value);
+              }}
+              class="select select-bordered w-full max-w-xs"
+            >
+              <option value="short_term">4 Weeks</option>
+              <option value="medium_term">6 Months</option>
+              <option value="long_term">Lifetime</option>
+            </select>
+          </div>
           <div className="table-container">
             <p class="text-white pt-10 pb-10 py-2 font-bold text-4xl">
               Top played
@@ -140,6 +156,7 @@ export default function Home() {
                   <th className="text-left px-12"></th>
                   <th className="text-left px-12">Artist</th>
                   <th className="text-left px-12">Genre</th>
+                  <th className="text-left px-12">Followers</th>
                   <th className="text-left px-12"></th>
                 </tr>
               </thead>
@@ -170,6 +187,11 @@ export default function Home() {
                       <th>
                         <div className="font-bold">{artist.genres[0]}</div>
                       </th>
+                      <th>
+                        <div className="font-bold">
+                          {artist.followers.total}
+                        </div>
+                      </th>
                     </tr>
                   ))}
               </tbody>
@@ -185,7 +207,6 @@ export default function Home() {
           </button>
         </div>
       </div>
-      <BottomNav class="pt-20" />
     </main>
   );
 }
