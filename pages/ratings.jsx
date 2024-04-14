@@ -31,7 +31,11 @@ export default function Home() {
           font-size: 140px;
         }
       `}</style>
-      <img src={profileData.images && profileData.images.length > 1 ? profileData.images[1].url : 'default_image_url'} alt="user image" />
+      <div className="avatar">
+            <div className="w-24 rounded-xl">
+                <img src={profileData.images && profileData.images.length > 1 ? profileData.images[1].url : 'default_image_url'} alt="user image" />
+            </div>
+        </div>
       <p>Username: {profileData.display_name}</p>
       <button className='text-white px-8 py-2 rounded-full bg-green-500 font-bold text-lg' onClick={()=>signOut('spotify', { callbackUrl: "/login"}) }>Logout</button>
       <BottomNav />

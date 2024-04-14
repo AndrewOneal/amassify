@@ -15,7 +15,6 @@ export default function Home() {
           }
         })
         const data = await response.json();
-        console.log(data);
         setProfileData(data);
       }
     }
@@ -23,6 +22,7 @@ export default function Home() {
   },[session]);
   return (
     <main>
+        
       <style jsx>{`
         img {
           border-radius: 50%;
