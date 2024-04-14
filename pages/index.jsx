@@ -77,55 +77,104 @@ export default function Home() {
           </p>
         </div>
         <div>
-          <p class="text-white pt-10 pb-10 py-2 font-bold text-4xl">
-            Top played
-          </p>
-        </div>
-        <div className="max-h-[20rem] overflow-y-auto">
-          <table className="table">
-            <thead>
-              <tr>
-                <th></th>
-                <th>Track</th>
-                <th>Artist</th>
-                <th>Album</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {topTracks.items &&
-                topTracks.items.map((track, index) => (
-                  <tr key={index}>
-                    <td>
-                      <div className="font-bold">#{index + 1}</div>
-                    </td>
-                    <td>
-                      <div className="flex items-center gap-3">
-                        <div className="avatar">
-                          <div className="w-12 h-12">
-                            <img
-                              src={
-                                track.album
-                                  ? track.album.images[0].url
-                                  : "default_image_url"
-                              }
-                              alt="album_img"
-                            />
+          <div className="table-container">
+            <p class="text-white pt-10 pb-10 py-2 font-bold text-4xl">
+              Top played
+            </p>
+          </div>
+          <div className="max-h-[20rem] overflow-y-auto">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th className="text-left px-12"></th>
+                  <th className="text-left px-12">Track</th>
+                  <th className="text-left px-12">Artist</th>
+                  <th className="text-left px-12">Album</th>
+                  <th className="text-left px-12"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {topTracks.items &&
+                  topTracks.items.map((track, index) => (
+                    <tr key={index}>
+                      <td>
+                        <div className="font-bold">#{index + 1}</div>
+                      </td>
+                      <td>
+                        <div className="flex items-center gap-3">
+                          <div className="avatar">
+                            <div className="w-12 h-12">
+                              <img
+                                src={
+                                  track.album
+                                    ? track.album.images[0].url
+                                    : "default_image_url"
+                                }
+                                alt="album_img"
+                              />
+                            </div>
                           </div>
+                          <div className="font-bold">{track.name}</div>
                         </div>
-                        <div className="font-bold">{track.name}</div>
-                      </div>
-                    </td>
-                    <th>
-                      <div className="font-bold">{track.artists[0].name}</div>
-                    </th>
-                    <th>
-                      <div className="font-bold">{track.album.name}</div>
-                    </th>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+                      </td>
+                      <th>
+                        <div className="font-bold">{track.artists[0].name}</div>
+                      </th>
+                      <th>
+                        <div className="font-bold">{track.album.name}</div>
+                      </th>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <p class="text-white pt-10 pb-10 py-2 font-bold text-4xl">
+              Top Artists
+            </p>
+          </div>
+          <div className="max-h-[20rem] overflow-y-auto">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th className="text-left px-12"></th>
+                  <th className="text-left px-12">Artist</th>
+                  <th className="text-left px-12">Genre</th>
+                  <th className="text-left px-12"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {topArtists.items &&
+                  topArtists.items.map((artist, index) => (
+                    <tr key={index}>
+                      <td>
+                        <div className="font-bold">#{index + 1}</div>
+                      </td>
+                      <td>
+                        <div className="flex items-center gap-3">
+                          <div className="avatar">
+                            <div className="w-12 h-12">
+                              <img
+                                src={
+                                  artist.images && artist.images.length > 0
+                                    ? artist.images[0].url
+                                    : "default_image_url"
+                                }
+                                alt="album_img"
+                              />
+                            </div>
+                          </div>
+                          <div className="font-bold">{artist.name}</div>
+                        </div>
+                      </td>
+                      <th>
+                        <div className="font-bold">{artist.genres[0]}</div>
+                      </th>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
         </div>
         <div class="pt-10 pb-20">
           <button
