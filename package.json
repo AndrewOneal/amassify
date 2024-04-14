@@ -13,7 +13,8 @@
     "next-auth": "^4.24.7",
     "node-fetch": "^3.3.2",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "react-router-dom": "^6.22.3"
   },
   "devDependencies": {
     "daisyui": "^4.10.1",

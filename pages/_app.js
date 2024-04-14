@@ -1,4 +1,5 @@
 import { SessionProvider } from "next-auth/react"
+import { BrowserRouter as Router } from 'react-router-dom'
 import '../styles/globals.css'
 
 export default function App({
@@ -7,7 +8,7 @@ export default function App({
 }) {
   return (
     <SessionProvider session={session}>
-      <Component {...pageProps} />
+        <Component {...pageProps} />
     </SessionProvider>
   )
 }
