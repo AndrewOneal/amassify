@@ -1,10 +1,15 @@
-import { useRouter } from "next/router";
 import Link from "next/link";
+import { useEffect, useState, useCallback } from "react";
+import { useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
+import { useRouter } from "next/router";
+import { Router } from "react-router-dom";
 
-const Navbar = () => {
+function NavBar() {
   const router = useRouter();
-
-  const { data: session } = useSession();0.
+  const { data: session } = useSession();
+  const [profileData, setProfileData] = useState([]);
+  const [selectedOption, setSelectedOption] = useState(null);
 
   const getProfileData = useCallback(async () => {
     if (session && session.accessToken) {
@@ -18,79 +23,147 @@ const Navbar = () => {
     }
   }, [session]);
 
-  return (
-    <div className="navbar bg-base-100">
-      <div className="flex-1">
-        <a className="btn btn-ghost text-xl">Amassify</a>
-      </div>
-      <div className="flex-none">
-        <div className="dropdown dropdown-end">
-          <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
-            <div className="indicator">
-              <svgs
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-              </svg>
-              <span className="badge badge-sm indicator-item">8</span>
-            </div>
-          </div>
-          <div
-            tabIndex={0}
-            className="mt-3 z-[1] card card-compact dropdown-content w-52 bg-base-100 shadow"
-          >
-            <div className="card-body">
-              <span className="font-bold text-lg">8 Items</span>
-              <span className="text-info">Subtotal: $999</span>
-              <div className="card-actions">
-                <button className="btn btn-primary btn-block">View cart</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="dropdown dropdown-end">
-          <div
-            tabIndex={0}
-            role="button"
-            className="btn btn-ghost btn-circle avatar"
-          >
-            <div className="w-10 rounded-full">
-              <img
-                alt="Tailwind CSS Navbar component"
-                src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"
-              />
-            </div>
-          </div>
-          <ul
-            tabIndex={0}
-            className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
-          >
-            <li>
-              <a className="justify-between">
-                Profile
-                <span className="badge">New</span>
-              </a>
-            </li>
-            <li>
-              <a>Settings</a>
-            </li>
-            <li>
-              <a>Logout</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  );
-};
+  useEffect(() => {
+    getProfileData();
+  }, [getProfileData]);
 
-export default Navbar;
+  useEffect(() => {
+    setSelectedOption(localStorage.getItem("selectedOption"));
+  }, []);
+
+  return (
+    <header class="header top-0 bg-gray-900 shadow-md flex items-center justify-between px-8 py-02 z-1">
+      <h1 class="w-3/12">
+        <a href="">
+          <div className="flex items-center">
+            <svg
+              width="160px"
+              height="60px"
+              viewBox="0 0 48 48"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+              <g
+                id="SVGRepo_tracerCarrier"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></g>
+              <g id="SVGRepo_iconCarrier">
+                {" "}
+                <rect width="48" height="48" fill="gray-900"></rect>{" "}
+                <path
+                  d="M42 30V24.4615C42 14.2655 33.9411 6 24 6C14.0589 6 6 14.2655 6 24.4615V30"
+                  stroke="#000000"
+                  stroke-width="4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></path>{" "}
+                <path
+                  d="M34 32C34 29.7909 35.7909 28 38 28H42V42H38C35.7909 42 34 40.2091 34 38V32Z"
+                  fill="#1DB954"
+                  stroke="#000000"
+                  stroke-width="4"
+                  stroke-linejoin="round"
+                ></path>{" "}
+                <path
+                  d="M42 32H44C45.1046 32 46 32.8954 46 34V36C46 37.1046 45.1046 38 44 38H42V32Z"
+                  fill="#000000"
+                ></path>{" "}
+                <path
+                  d="M6 32H4C2.89543 32 2 32.8954 2 34V36C2 37.1046 2.89543 38 4 38H6V32Z"
+                  fill="#000000"
+                ></path>{" "}
+                <path
+                  d="M6 28H10C12.2091 28 14 29.7909 14 32V38C14 40.2091 12.2091 42 10 42H6V28Z"
+                  fill="#1DB954"
+                  stroke="#000000"
+                  stroke-width="4"
+                  stroke-linejoin="round"
+                ></path>{" "}
+              </g>
+            </svg>
+            <p className="text-white py-3 font-bold text-4xl ml-0">Amassify</p>
+          </div>
+        </a>
+      </h1>
+      <nav class="nav font-semibold text-lg">
+        <ul class="flex items-center">
+          <li
+            className={`p-4 border-b-2 ${
+              selectedOption === "Profile"
+                ? "border-green-500 text-green-500"
+                : "border-green-500 border-opacity-0"
+            } hover:border-opacity-100 hover:text-green-500 duration-200 cursor-pointer`}
+            onClick={() => {
+              setSelectedOption((prev) => {
+                const newValue = "Profile";
+                localStorage.setItem("selectedOption", newValue);
+                return newValue;
+              });
+              router.push("/");
+            }}
+          >
+            Profile
+          </li>
+          <li
+            className={`p-4 border-b-2 ${
+              selectedOption === "Ratings"
+                ? "border-green-500 text-green-500"
+                : "border-green-500 border-opacity-0"
+            } hover:border-opacity-100 hover:text-green-500 duration-200 cursor-pointer`}
+            onClick={() => {
+              setSelectedOption((prev) => {
+                const newValue = "Ratings";
+                localStorage.setItem("selectedOption", newValue);
+                return newValue;
+              });
+              router.push("/ratings");
+            }}
+          >
+            Ratings
+          </li>
+          <li
+            className={`p-4 border-b-2 ${
+              selectedOption === "Insights"
+                ? "border-green-500 text-green-500"
+                : "border-green-500 border-opacity-0"
+            } hover:border-opacity-100 hover:text-green-500 duration-200 cursor-pointer`}
+            onClick={() => {
+              setSelectedOption((prev) => {
+                const newValue = "Insights";
+                localStorage.setItem("selectedOption", newValue);
+                return newValue;
+              });
+              router.push("/insights");
+            }}
+          >
+            Data Insights
+          </li>
+        </ul>
+      </nav>
+      <div class="w-3/12 flex justify-end">
+        <button
+          className="text-white px-4 py-2 rounded-full bg-green-500 font-bold text-lg align"
+          onClick={() => signOut("spotify", { callbackUrl: "/login" })}
+        >
+          Logout
+        </button>
+        <div className="avatar pl-5">
+          <div className="w-12 rounded-xl">
+            <img
+              src={
+                profileData.images && profileData.images.length > 1
+                  ? profileData.images[1].url
+                  : "default_image_url"
+              }
+              alt="user image"
+            />
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+export default NavBar;

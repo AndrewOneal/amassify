@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 import NavBar from "../components/nav_bar.jsx";
 import { useCallback } from "react";
-import Image from "next/image";
 
 export default function Home() {
   const { data: session } = useSession();
@@ -62,12 +61,11 @@ export default function Home() {
 
   return (
     <main>
-      <NavBar />
-      <div className="pt-10 pl-20 pr-20">
-        <div class="text-white text-6xl pb-20 font-bold"> Your Profile</div>
+      <NavBar className="z-1" />
+      <div className="pt-5 pl-20 pr-20">
         <div className="flex flex-col">
-          <div className="avatar">
-            <div className="w-24 rounded-xl">
+          <div className="avatar flex items-center m-4">
+            <div className="w-24 rounded-xl z-0">
               <img
                 src={
                   profileData.images && profileData.images.length > 1
@@ -198,16 +196,9 @@ export default function Home() {
               </table>
             </div>
           </div>
-          <div class="pt-10 pb-20">
-            <button
-              className="text-white px-8 py-2 rounded-full bg-green-500 font-bold text-lg align"
-              onClick={() => signOut("spotify", { callbackUrl: "/login" })}
-            >
-              Logout
-            </button>
-          </div>
         </div>
       </div>
+      <div className="h-20"></div>
     </main>
   );
 }
