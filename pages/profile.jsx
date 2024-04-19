@@ -1,6 +1,5 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { signOut } from "next-auth/react";
 import NavBar from "../components/nav_bar.jsx";
 import { useCallback } from "react";
 
