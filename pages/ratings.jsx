@@ -18,49 +18,45 @@ const pb = new PocketBase("https://amassify.pockethost.io");
 export default function Ratings() {
   const { data: session } = useSession();
   const [profileData, setProfileData] = useState([]);
+  const [accessToken, setAccessToken] = useState(null);
 
-  const checkForExistingRankings = useCallback(async (id) => {
-    if (id) {
-      try {
-        const record = await pb
-          .collection("ratings")
-          .getFirstListItem(`spotify_user_ID=${id}`);
-        console.log(record);
-      } catch (error) {
-        console.log(error);
-        console.log(id);
+  const getProfileDataAndCheckRankings = useCallback(async () => {
+    if (accessToken) {
+      const response = await fetch("https://api.spotify.com/v1/me", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = await response.json();
+      setProfileData(data);
+
+      if (data.id) {
         try {
-          const record = await pb.collection("ratings").create({
-            spotify_user_ID: id,
-            rankings: [],
-          });
-          console.log(record);
-        } catch (error) {}
+          const record = await pb
+            .collection("ratings")
+            .getFirstListItem(`spotify_user_ID="${data.id}"`);
+          console.log("success");
+        } catch (error) {
+          try {
+            const record = await pb.collection("ratings").create({
+              spotify_user_ID: data.id,
+              rankings: [],
+            });
+          } catch (error) {}
+        }
       }
     }
-  }, []);
-
-  const getProfileData = useCallback(
-    async (accessToken, id) => {
-      if (accessToken) {
-        const response = await fetch("https://api.spotify.com/v1/me", {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-        const data = await response.json();
-        setProfileData(data);
-        checkForExistingRankings(id);
-      }
-    },
-    [checkForExistingRankings]
-  );
+  }, [accessToken]);
 
   useEffect(() => {
     if (session && session.accessToken) {
-      getProfileData(session.accessToken, session.user.id);
+      setAccessToken(session.accessToken);
     }
-  }, [session, getProfileData]);
+  }, [session]);
+
+  useEffect(() => {
+    getProfileDataAndCheckRankings();
+  }, [getProfileDataAndCheckRankings]);
 
   return (
     <main>
