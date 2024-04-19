@@ -17,8 +17,8 @@ const pb = new PocketBase("https://amassify.pockethost.io");
 
 export default function Ratings() {
   const { data: session } = useSession();
-  const [profileData, setProfileData] = useState([]);
   const [accessToken, setAccessToken] = useState(null);
+  const [userRatings, setUserRatings] = useState([]);
 
   const getProfileDataAndCheckRankings = useCallback(async () => {
     if (accessToken) {
@@ -28,21 +28,23 @@ export default function Ratings() {
         },
       });
       const data = await response.json();
-      setProfileData(data);
 
       if (data.id) {
         try {
           const record = await pb
             .collection("ratings")
             .getFirstListItem(`spotify_user_ID="${data.id}"`);
-          console.log("success");
+          setUserRatings(record.rankings);
         } catch (error) {
           try {
             const record = await pb.collection("ratings").create({
               spotify_user_ID: data.id,
               rankings: [],
             });
-          } catch (error) {}
+            setUserRatings(record.rankings);
+          } catch (error) {
+            setUserRatings([]);
+          }
         }
       }
     }

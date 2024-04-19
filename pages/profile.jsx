@@ -69,7 +69,7 @@ export default function Home() {
                 src={
                   profileData.images && profileData.images.length > 1
                     ? profileData.images[1].url
-                    : "default_image_url"
+                    : "https://upload.wikimedia.org/wikipedia/commons/b/b5/Windows_10_Default_Profile_Picture.svg"
                 }
                 alt="user image"
               />
@@ -121,7 +121,7 @@ export default function Home() {
                                   src={
                                     track.album
                                       ? track.album.images[0].url
-                                      : "default_image_url"
+                                      : "https://upload.wikimedia.org/wikipedia/commons/b/b5/Windows_10_Default_Profile_Picture.svg"
                                   }
                                   alt="album_img"
                                 />
@@ -172,7 +172,7 @@ export default function Home() {
                                   src={
                                     artist.images && artist.images.length > 0
                                       ? artist.images[0].url
-                                      : "default_image_url"
+                                      : "https://upload.wikimedia.org/wikipedia/commons/b/b5/Windows_10_Default_Profile_Picture.svg"
                                   }
                                   alt="album_img"
                                 />

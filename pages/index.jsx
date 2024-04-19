@@ -11,12 +11,6 @@ export default function Home() {
   const [topArtists, setTopArtists] = useState([]);
   const [timeframe, setTimeframe] = useState("short_term");
 
-  const checkUserLoggedIn = useCallback(() => {
-    if (!session || !session.accessToken) {
-      signOut();
-    }
-  }, [session]);
-
   const getProfileData = useCallback(async () => {
     if (session && session.accessToken) {
       const response = await fetch("https://api.spotify.com/v1/me", {
@@ -60,11 +54,10 @@ export default function Home() {
   }, [session, timeframe]);
 
   useEffect(() => {
-    checkUserLoggedIn();
     getProfileData();
     getTopTracks();
     getTopArtists();
-  }, [checkUserLoggedIn, getProfileData, getTopTracks, getTopArtists]);
+  }, [getProfileData, getTopTracks, getTopArtists]);
 
   return (
     <main>
@@ -77,12 +70,12 @@ export default function Home() {
                 src={
                   profileData.images && profileData.images.length > 1
                     ? profileData.images[1].url
-                    : "default_image_url"
+                    : "https://upload.wikimedia.org/wikipedia/commons/b/b5/Windows_10_Default_Profile_Picture.svg"
                 }
                 alt="user image"
               />
             </div>
-            <p class="text-white px-8 py-2 font-bold text-5xl">
+            <p className="text-white px-8 py-2 font-bold text-5xl">
               {profileData.display_name}
             </p>
           </div>
@@ -92,7 +85,7 @@ export default function Home() {
               onChange={(e) => {
                 setTimeframe(e.target.value);
               }}
-              class="select select-bordered w-full max-w-xs"
+              className="select select-bordered w-full max-w-xs"
             >
               <option value="short_term">4 Weeks</option>
               <option value="medium_term">6 Months</option>
@@ -100,7 +93,7 @@ export default function Home() {
             </select>
           </div>
           <div className="table-container">
-            <p class="text-white pt-10 pb-10 py-2 font-bold text-4xl">
+            <p className="text-white pt-10 pb-10 py-2 font-bold text-4xl">
               Top played
             </p>
             <div className="max-h-[20rem] overflow-y-auto">
@@ -129,7 +122,7 @@ export default function Home() {
                                   src={
                                     track.album
                                       ? track.album.images[0].url
-                                      : "default_image_url"
+                                      : "https://upload.wikimedia.org/wikipedia/commons/b/b5/Windows_10_Default_Profile_Picture.svg"
                                   }
                                   alt="album_img"
                                 />
@@ -151,7 +144,7 @@ export default function Home() {
                 </tbody>
               </table>
             </div>
-            <p class="text-white pt-10 pb-10 py-2 font-bold text-4xl">
+            <p className="text-white pt-10 pb-10 py-2 font-bold text-4xl">
               Top Artists
             </p>
             <div className="max-h-[20rem] overflow-y-auto">
@@ -180,7 +173,7 @@ export default function Home() {
                                   src={
                                     artist.images && artist.images.length > 0
                                       ? artist.images[0].url
-                                      : "default_image_url"
+                                      : "https://upload.wikimedia.org/wikipedia/commons/b/b5/Windows_10_Default_Profile_Picture.svg"
                                   }
                                   alt="album_img"
                                 />
