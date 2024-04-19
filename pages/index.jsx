@@ -25,6 +25,7 @@ export default function Home() {
 
   const getTopTracks = useCallback(async () => {
     if (session && session.accessToken) {
+      console.log("called");
       const response = await fetch(
         `https://api.spotify.com/v1/me/top/tracks?time_range=${timeframe}`,
         {
