@@ -11,6 +11,12 @@ export default function Home() {
   const [topArtists, setTopArtists] = useState([]);
   const [timeframe, setTimeframe] = useState("short_term");
 
+  const checkUserLoggedIn = useCallback(() => {
+    if (!session || !session.accessToken) {
+      signOut();
+    }
+  }, [session]);
+
   const getProfileData = useCallback(async () => {
     if (session && session.accessToken) {
       const response = await fetch("https://api.spotify.com/v1/me", {
@@ -25,7 +31,6 @@ export default function Home() {
 
   const getTopTracks = useCallback(async () => {
     if (session && session.accessToken) {
-      console.log("called");
       const response = await fetch(
         `https://api.spotify.com/v1/me/top/tracks?time_range=${timeframe}`,
         {
@@ -55,10 +60,11 @@ export default function Home() {
   }, [session, timeframe]);
 
   useEffect(() => {
+    checkUserLoggedIn();
     getProfileData();
     getTopTracks();
     getTopArtists();
-  }, [getProfileData, getTopTracks, getTopArtists]);
+  }, [checkUserLoggedIn, getProfileData, getTopTracks, getTopArtists]);
 
   return (
     <main>
