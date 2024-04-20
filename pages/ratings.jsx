@@ -19,7 +19,9 @@ const pb = new PocketBase("https://amassify.pockethost.io");
 export default function Ratings() {
   const { data: session } = useSession();
   const [accessToken, setAccessToken] = useState(null);
-  const [userRatings, setUserRatings] = useState([]);
+  const [trackRatings, setTrackRatings] = useState([]);
+  const [albumRatings, setAlbumRatings] = useState([]);
+  const [artistRatings, setArtistRatings] = useState([]);
 
   const getProfileDataAndCheckRankings = useCallback(async () => {
     if (accessToken) {
@@ -35,16 +37,25 @@ export default function Ratings() {
           const record = await pb
             .collection("ratings")
             .getFirstListItem(`spotify_user_ID="${data.id}"`);
-          setUserRatings(record.rankings);
+          console.log("record exists");
+          setTrackRatings(record.tracks);
+          setAlbumRatings(record.albums);
+          setArtistRatings(record.artists);
         } catch (error) {
           try {
             const record = await pb.collection("ratings").create({
               spotify_user_ID: data.id,
               rankings: [],
             });
-            setUserRatings(record.rankings);
+            console.log("record created");
+            setTrackRatings(record.tracks);
+            setAlbumRatings(record.albums);
+            setArtistRatings(record.artists);
           } catch (error) {
-            setUserRatings([]);
+            console.log("error");
+            setTrackRatings([]);
+            setAlbumRatings([]);
+            setArtistRatings([]);
           }
         }
       }
@@ -67,16 +78,6 @@ export default function Ratings() {
       <DndContext>
         <div className="flex flex-col items-center justify-center">
           <h1 className="text-4xl font-bold">Ratings</h1>
-          <div className="flex flex-col items-center justify-center">
-            {userRatings.map((rating, index) => (
-              <div key={index} className="flex items-center justify-center">
-                <p>{rating}</p>
-                <button>Delete</button>
-              </div>
-            ))}
-          </div>
-          <button>Add Rating</button>
-          <button>Delete All</button>
         </div>
       </DndContext>
     </main>
