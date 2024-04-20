@@ -1,6 +1,5 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { signOut } from "next-auth/react";
 import NavBar from "../components/nav_bar.jsx";
 import { useCallback } from "react";
 
@@ -94,7 +93,7 @@ export default function Home() {
           </div>
           <div className="table-container">
             <p className="text-white pt-10 pb-10 py-2 font-bold text-4xl">
-              Top played
+              Top Played Tracks
             </p>
             <div className="max-h-[20rem] overflow-y-auto">
               <table className="table">

@@ -4,14 +4,15 @@ import { useEffect, useState, useCallback } from "react";
 import { DndContext } from "@dnd-kit/core";
 import PocketBase from "pocketbase";
 
-// get data from database on load
-// query spotify with array of song, album, artist ids
-// fill dnds with data
-// add song/album/artist to dnd
-// query spotify for song/album/artist data
-// add item to the database, refresh list of items
-// delete button on each item, delete item from database, refresh list of items
-// delete everything button, delete all items from database, refresh list of items??
+// TO DO:
+// - build dnd component(s) for the ranking lists
+// - dynamically fill the dnd components with the data from the database
+// - add a button to add a new item to each list
+//   - query spotify for the item data
+//   - figure out how to capture that item data and put it in the database
+// - add a delete button to each item
+//  - delete the item from the database and refresh
+// - add a delete all button, wipes all of the list items from the database and refreshes
 
 const pb = new PocketBase("https://amassify.pockethost.io");
 
@@ -63,6 +64,21 @@ export default function Ratings() {
   return (
     <main>
       <NavBar />
+      <DndContext>
+        <div className="flex flex-col items-center justify-center">
+          <h1 className="text-4xl font-bold">Ratings</h1>
+          <div className="flex flex-col items-center justify-center">
+            {userRatings.map((rating, index) => (
+              <div key={index} className="flex items-center justify-center">
+                <p>{rating}</p>
+                <button>Delete</button>
+              </div>
+            ))}
+          </div>
+          <button>Add Rating</button>
+          <button>Delete All</button>
+        </div>
+      </DndContext>
     </main>
   );
 }
