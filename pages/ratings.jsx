@@ -1,18 +1,31 @@
 import NavBar from "@/components/nav_bar";
 import { useSession } from "next-auth/react";
 import { useEffect, useState, useCallback } from "react";
-import { DndContext } from "@dnd-kit/core";
 import PocketBase from "pocketbase";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 
-// TO DO:
-// - build dnd component(s) for the ranking lists
-// - dynamically fill the dnd components with the data from the database
-// - add a button to add a new item to each list
-//   - query spotify for the item data
-//   - figure out how to capture that item data and put it in the database
-// - add a delete button to each item
-//  - delete the item from the database and refresh
-// - add a delete all button, wipes all of the list items from the database and refreshes
+import { SortableItem } from "@/components/SortableItem";
+
+// 1. get all existing ratings from the database
+// 2. query the spotify api for the track data
+// 3. display the track data in a dnd component
+// 4. on change
+// 5. update the useState for that item type
+// 6. rebuild the json from the useState and update the db with the new item
+// 7. query spotify again for track data
 
 const pb = new PocketBase("https://amassify.pockethost.io");
 
@@ -22,6 +35,46 @@ export default function Ratings() {
   const [albumRatings, setAlbumRatings] = useState([]);
   const [artistRatings, setArtistRatings] = useState([]);
   const [trackData, setTrackData] = useState([]);
+
+  const [items, setItems] = useState(["A", "B", "C"]);
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  function handleDragEnd(event) {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      setItems((items) => {
+        const oldIndex = items.indexOf(active.id);
+        const newIndex = items.indexOf(over.id);
+
+        const newArray = arrayMove(items, oldIndex, newIndex);
+
+        console.log(newArray);
+
+        return newArray;
+      });
+    }
+  }
+
+  function addItem() {
+    setItems((items) => {
+      let letter = String.fromCharCode(
+        items[items.length - 1].charCodeAt(0) + 1
+      );
+
+      if (items.includes(letter)) {
+        console.log("already exists");
+        return items;
+      } else {
+        return [...items, letter];
+      }
+    });
+  }
 
   const getProfileDataAndCheckRankings = useCallback(async () => {
     if (session && session.accessToken) {
@@ -70,25 +123,25 @@ export default function Ratings() {
     }
   }, [session]);
 
-  // const getTracksFromRanking = useCallback(async () => {
-  //   console.log(trackRatings.map((track) => track.id).join(","));
-  //   console.log(albumRatings);
-  //   console.log(artistRatings);
-  //   if (session && session.accessToken) {
-  //     const response = await fetch(
-  //       `https://api.spotify.com/v1/tracks?ids=${trackRatings
-  //         .map((track) => track.id)
-  //         .join(",")}`,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${session.accessToken}`,
-  //         },
-  //       }
-  //     );
-  //     console.log(response);
-  //     // setTrackData(response.json());
-  //   }
-  // }, [session]);
+  const getTracksFromRanking = useCallback(async () => {
+    console.log(trackRatings.map((track) => track.id).join(","));
+    console.log(albumRatings);
+    console.log(artistRatings);
+    if (session && session.accessToken) {
+      const response = await fetch(
+        `https://api.spotify.com/v1/tracks?ids=${trackRatings
+          .map((track) => track.id)
+          .join(",")}`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        }
+      );
+      console.log(response);
+      // setTrackData(response.json());
+    }
+  }, [session]);
 
   async function getTrack() {
     const response = await fetch(
@@ -113,64 +166,20 @@ export default function Ratings() {
   return (
     <main>
       <NavBar />
-      <DndContext>
-        <button onClick={getTrack}>Get Album</button>
-        <div className="flex flex-col items-center justify-center">
-          <div className="table-container">
-            <p className="text-white pt-10 pb-10 py-2 font-bold text-4xl">
-              Top Played Tracks
-            </p>
-            <div className="max-h-[20rem] overflow-y-auto">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th className="text-left px-12"></th>
-                    <th className="text-left px-12">Track</th>
-                    <th className="text-left px-12">Artist</th>
-                    <th className="text-left px-12">Album</th>
-                    <th className="text-left px-12"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {trackData &&
-                    trackData.items &&
-                    trackData.items.map((track, index) => (
-                      <tr key={index}>
-                        <td>
-                          <div className="font-bold">#{index + 1}</div>
-                        </td>
-                        <td>
-                          <div className="flex items-center gap-3">
-                            <div className="avatar">
-                              <div className="w-12 h-12">
-                                <img
-                                  src={
-                                    track.album
-                                      ? track.album.images[0].url
-                                      : "https://upload.wikimedia.org/wikipedia/commons/b/b5/Windows_10_Default_Profile_Picture.svg"
-                                  }
-                                  alt="album_img"
-                                />
-                              </div>
-                            </div>
-                            <div className="font-bold">{track.name}</div>
-                          </div>
-                        </td>
-                        <th>
-                          <div className="font-bold">
-                            {track.artists[0].name}
-                          </div>
-                        </th>
-                        <th>
-                          <div className="font-bold">{track.album.name}</div>
-                        </th>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <button type="button" onClick={addItem}>
+          Click Me!
+        </button>
+
+        <SortableContext items={items} strategy={verticalListSortingStrategy}>
+          {items.map((id) => (
+            <SortableItem key={id} id={id} />
+          ))}
+        </SortableContext>
       </DndContext>
     </main>
   );
