@@ -40,6 +40,12 @@ export default function Ratings() {
   const [searchResults, setSearchResults] = useState([]);
   const [resultsDisplay, setResultsDisplay] = React.useState(null);
 
+  const setFunctions = {
+    tracks: setTrackRatings,
+    albums: setAlbumRatings,
+    artists: setArtistRatings,
+  };
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -94,6 +100,27 @@ export default function Ratings() {
       }
     }
   }, [session]);
+
+  const getItemsFromRanking = useCallback(
+    async (itemIds, itemType) => {
+      if (session && session.accessToken) {
+        const response = await fetch(
+          `https://api.spotify.com/v1/${itemType}?ids=${itemIds
+            .map((item) => item)
+            .join(",")}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+          }
+        );
+        const setFunction = setFunctions[itemType];
+        const data = await response.json();
+        setFunction(data);
+      }
+    },
+    [session]
+  );
 
   const getTracksFromRanking = useCallback(
     async (trackIds) => {
@@ -155,6 +182,22 @@ export default function Ratings() {
     [session]
   );
 
+  function handleDragEnd(event, itemType) {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      const setFunction = setFunctions[itemType];
+
+      setFunction((items) => {
+        const oldIndex = items.indexOf(active.id);
+        const newIndex = items.indexOf(over.id);
+        const newArray = arrayMove(items, oldIndex, newIndex);
+        updateDbItems(newArray, itemType);
+        return newArray;
+      });
+    }
+  }
+
   function handleDragEnd(event) {
     const { active, over } = event;
 
@@ -169,6 +212,29 @@ export default function Ratings() {
 
         return newArray;
       });
+    }
+  }
+
+  async function updateDbItems(items, itemType) {
+    const retryDelay = 1000;
+    const maxRetries = 3;
+
+    let retries = 0;
+    let record;
+
+    while (!record && retries < maxRetries) {
+      try {
+        record = await pb
+          .collection("ratings")
+          .getFirstListItem(`spotify_user_ID="${userId}"`);
+        const response = await pb
+          .collection("ratings")
+          .update(record.id, { [itemType]: items });
+      } catch (error) {
+        console.error(`Attempt ${retries + 1} failed. Retrying after delay...`);
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        retries++;
+      }
     }
   }
 
@@ -195,6 +261,16 @@ export default function Ratings() {
     }
   }
 
+  async function deleteItemRating(id, itemType) {
+    setTrackRatings((items) => {
+      const newArray = items.filter((item) => item !== id);
+      const setFunction = setFunctions[itemType];
+      setFunction(newArray);
+      updateDbItems(newArray, itemType);
+      return newArray;
+    });
+  }
+
   async function deleteTrackRating(id) {
     setTrackRatings((items) => {
       const newArray = items.filter((item) => item !== id);
@@ -202,6 +278,21 @@ export default function Ratings() {
       updateDbTracks(newArray);
       return newArray;
     });
+  }
+
+  async function searchItem(searchTerm, itemType) {
+    if (session && session.accessToken && searchTerm) {
+      const response = await fetch(
+        `https://api.spotify.com/v1/search?q=${searchTerm}&type=${itemType}&limit=10`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        }
+      );
+      const data = await response.json();
+      return data;
+    }
   }
 
   async function searchTrack(searchTerm) {
@@ -218,6 +309,17 @@ export default function Ratings() {
       return data;
     }
   }
+
+  const handleItemClick = (itemId, itemType) => {
+    const setFunction = setFunctions[itemType];
+    setFunction((prevItemRatings) => {
+      const updatedTrackRatings = [...prevItemRatings, itemId];
+      updateDbItems(updatedTrackRatings, itemType);
+      return updatedTrackRatings;
+    });
+    setSearchResults([]);
+    document.getElementById("my_modal_3").close();
+  };
 
   const handleTrackClick = (trackId) => {
     setTrackRatings((prevTrackRatings) => {
@@ -238,19 +340,19 @@ export default function Ratings() {
 
   useEffect(() => {
     if (trackRatings.length > 0) {
-      getTracksFromRanking(trackRatings);
+      getItemsFromRanking(trackRatings, "tracks");
     }
   }, [trackRatings]);
 
   useEffect(() => {
     if (albumRatings.length > 0) {
-      getAlbumsFromRanking(albumRatings);
+      getItemsFromRanking(albumRatings, "albums");
     }
   }, [albumRatings]);
 
   useEffect(() => {
     if (artistRatings.length > 0) {
-      getArtistsFromRanking(artistRatings);
+      getItemsFromRanking(artistRatings, "artists");
     }
   }, [artistRatings]);
 
