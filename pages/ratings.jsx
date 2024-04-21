@@ -16,7 +16,6 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-
 import { SortableItem } from "@/components/SortableItem";
 
 // 1. get all existing ratings from the database
@@ -178,8 +177,6 @@ export default function Ratings() {
     let retries = 0;
     let record;
 
-    console.log(userId);
-
     while (!record && retries < maxRetries) {
       try {
         record = await pb
@@ -188,9 +185,7 @@ export default function Ratings() {
         const response = await pb
           .collection("ratings")
           .update(record.id, { tracks: tracks });
-        console.log(response);
       } catch (error) {
-        console.log(error);
         console.error(`Attempt ${retries + 1} failed. Retrying after delay...`);
         await new Promise((resolve) => setTimeout(resolve, retryDelay));
         retries++;
@@ -211,6 +206,10 @@ export default function Ratings() {
         return [...items, letter];
       }
     });
+  }
+
+  function logTrackData() {
+    console.log(Array.isArray(trackData.tracks));
   }
 
   useEffect(() => {
@@ -246,18 +245,47 @@ export default function Ratings() {
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
-        <button type="button" onClick={addItem}>
+        <button type="button" onClick={logTrackData}>
           Click Me!
         </button>
 
-        <SortableContext
-          items={trackRatings}
-          strategy={verticalListSortingStrategy}
-        >
-          {trackRatings.map((id) => (
-            <SortableItem key={id} id={id} />
-          ))}
-        </SortableContext>
+        <div className="table-container">
+          <p className="text-white pt-10 pb-10 py-2 font-bold text-4xl">
+            Top Played Tracks
+          </p>
+          <div className="max-h-[20rem] overflow-y-auto">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th className="text-left px-12"></th>
+                  <th className="text-left px-12">Track</th>
+                  <th className="text-left px-12">Artist</th>
+                  <th className="text-left px-12">Album</th>
+                  <th className="text-left px-12"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {trackData && trackData.tracks && (
+                  <SortableContext
+                    items={trackData.tracks}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {Array.isArray(trackData.tracks) &&
+                      trackData.tracks.map((track, index) => (
+                        <SortableItem
+                          key={index}
+                          id={trackRatings[index]}
+                          track={track}
+                          rating={trackRatings[index]}
+                          index={index}
+                        />
+                      ))}
+                  </SortableContext>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </DndContext>
     </main>
   );
