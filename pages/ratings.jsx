@@ -1,6 +1,6 @@
 import NavBar from "@/components/nav_bar";
 import { useSession } from "next-auth/react";
-import { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import PocketBase from "pocketbase";
 import {
   DndContext,
@@ -37,6 +37,8 @@ export default function Ratings() {
   const [trackData, setTrackData] = useState([]);
   const [albumData, setAlbumData] = useState([]);
   const [artistData, setArtistData] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
+  const [resultsDisplay, setResultsDisplay] = React.useState(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -196,13 +198,14 @@ export default function Ratings() {
   async function deleteTrackRating(id) {
     setTrackRatings((items) => {
       const newArray = items.filter((item) => item !== id);
+      setTrackRatings(newArray);
       updateDbTracks(newArray);
       return newArray;
     });
   }
 
   async function searchTrack(searchTerm) {
-    if (session && session.accessToken) {
+    if (session && session.accessToken && searchTerm) {
       const response = await fetch(
         `https://api.spotify.com/v1/search?q=${searchTerm}&type=track&limit=10`,
         {
@@ -216,20 +219,15 @@ export default function Ratings() {
     }
   }
 
-  function addItem() {
-    setItems((items) => {
-      let letter = String.fromCharCode(
-        items[items.length - 1].charCodeAt(0) + 1
-      );
-
-      if (items.includes(letter)) {
-        console.log("already exists");
-        return items;
-      } else {
-        return [...items, letter];
-      }
+  const handleTrackClick = (trackId) => {
+    setTrackRatings((prevTrackRatings) => {
+      const updatedTrackRatings = [...prevTrackRatings, trackId];
+      updateDbTracks(updatedTrackRatings);
+      return updatedTrackRatings;
     });
-  }
+    setSearchResults([]);
+    document.getElementById("my_modal_3").close();
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -256,6 +254,56 @@ export default function Ratings() {
     }
   }, [artistRatings]);
 
+  useEffect(() => {
+    if (searchResults && searchResults.length > 0) {
+      const newDisplay = (
+        <div>
+          <p>Results:</p>
+          <table className="table">
+            <thead>
+              <tr>
+                <th className="text-left px-12">Track</th>
+                <th className="text-left px-12">Artist</th>
+                <th className="text-left px-12">Album</th>
+              </tr>
+            </thead>
+            <tbody>
+              {searchResults &&
+                searchResults.map((track, index) => (
+                  <tr key={index} onClick={() => handleTrackClick(track.id)}>
+                    <td>
+                      <div className="flex items-center gap-3">
+                        <div className="avatar">
+                          <div className="w-12 h-12">
+                            <img
+                              src={
+                                track.album
+                                  ? track.album.images[0].url
+                                  : "https://upload.wikimedia.org/wikipedia/commons/b/b5/Windows_10_Default_Profile_Picture.svg"
+                              }
+                              alt="album_img"
+                            />
+                          </div>
+                        </div>
+                        <div className="font-bold">{track.name}</div>
+                      </div>
+                    </td>
+                    <th>
+                      <div className="font-bold">{track.artists[0].name}</div>
+                    </th>
+                    <th>
+                      <div className="font-bold">{track.album.name}</div>
+                    </th>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      );
+      setResultsDisplay(newDisplay);
+    }
+  }, [searchResults]);
+
   return (
     <main>
       <NavBar />
@@ -278,10 +326,20 @@ export default function Ratings() {
               >
                 Add Track
               </button>
-              <dialog id="my_modal_3" className="modal">
-                <div className="modal-box">
+              <dialog
+                id="my_modal_3"
+                className="modal"
+                onClose={() => setSearchResults([])}
+              >
+                <div className="modal-box max-w-5xl">
                   <form method="dialog">
-                    <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                    <button
+                      className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                      onClick={() => {
+                        document.getElementById("my_modal_3").close();
+                        setSearchResults([]);
+                      }}
+                    >
                       ✕
                     </button>
                   </form>
@@ -297,16 +355,21 @@ export default function Ratings() {
                     onClick={() => {
                       const searchTerm =
                         document.getElementById("searchTerm").value;
-                      searchTrack(searchTerm).then((data) => console.log(data));
+                      if (searchTerm) {
+                        searchTrack(searchTerm).then((data) => {
+                          setSearchResults(data.tracks.items);
+                        });
+                      }
                     }}
                   >
                     Search
                   </button>
+                  {resultsDisplay}
                 </div>
               </dialog>
 
               <div className="max-h-[20rem] overflow-y-auto">
-                <table className="table">
+                <table className="table ">
                   <thead>
                     <tr>
                       <th className="text-left px-12"></th>
