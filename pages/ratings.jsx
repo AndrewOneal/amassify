@@ -24,7 +24,6 @@ export default function Ratings() {
   const [trackData, setTrackData] = useState([]);
 
   const getProfileDataAndCheckRankings = useCallback(async () => {
-    console.log("getprofileandcheckrankings called");
     if (session && session.accessToken) {
       const response = await fetch("https://api.spotify.com/v1/me", {
         headers: {
@@ -33,37 +32,48 @@ export default function Ratings() {
       });
       const data = await response.json();
 
-      if (data.id) {
+      const retryDelay = 1000;
+      const maxRetries = 3;
+
+      let retries = 0;
+      let record;
+
+      while (!record && retries < maxRetries) {
         try {
-          const record = await pb
+          record = await pb
             .collection("ratings")
             .getFirstListItem(`spotify_user_ID="${data.id}"`);
-          setTrackRatings(record.tracks);
-          setAlbumRatings(record.albums);
-          setArtistRatings(record.artists);
         } catch (error) {
-          try {
-            const record = await pb.collection("ratings").create({
-              spotify_user_ID: data.id,
-              tracks: [],
-              albums: [],
-              artists: [],
-            });
-            setTrackRatings(record.tracks);
-            setAlbumRatings(record.albums);
-            setArtistRatings(record.artists);
-          } catch (error) {
-            setTrackRatings([]);
-            setAlbumRatings([]);
-            setArtistRatings([]);
-          }
+          console.error(
+            `Attempt ${retries + 1} failed. Retrying after delay...`
+          );
+          await new Promise((resolve) => setTimeout(resolve, retryDelay));
+          retries++;
         }
+      }
+
+      if (record) {
+        setTrackRatings(record.tracks);
+        setAlbumRatings(record.albums);
+        setArtistRatings(record.artists);
+      } else {
+        const record = await pb.collection("ratings").create({
+          spotify_user_ID: data.id,
+          tracks: [],
+          albums: [],
+          artists: [],
+        });
+        setTrackRatings(record.tracks);
+        setAlbumRatings(record.albums);
+        setArtistRatings(record.artists);
       }
     }
   }, [session]);
 
   // const getTracksFromRanking = useCallback(async () => {
-  //   console.log("getTracksFromRanking called");
+  //   console.log(trackRatings.map((track) => track.id).join(","));
+  //   console.log(albumRatings);
+  //   console.log(artistRatings);
   //   if (session && session.accessToken) {
   //     const response = await fetch(
   //       `https://api.spotify.com/v1/tracks?ids=${trackRatings
@@ -75,9 +85,22 @@ export default function Ratings() {
   //         },
   //       }
   //     );
-  //     setTrackData(response.json());
+  //     console.log(response);
+  //     // setTrackData(response.json());
   //   }
-  // }, [session, trackRatings]);
+  // }, [session]);
+
+  async function getTrack() {
+    const response = await fetch(
+      "https://api.spotify.com/v1/albums/3myqn4myBolKFhGs0s7lM7",
+      {
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+      }
+    );
+    console.log(response);
+  }
 
   useEffect(() => {
     async function fetchData() {
@@ -91,6 +114,7 @@ export default function Ratings() {
     <main>
       <NavBar />
       <DndContext>
+        <button onClick={getTrack}>Get Album</button>
         <div className="flex flex-col items-center justify-center">
           <div className="table-container">
             <p className="text-white pt-10 pb-10 py-2 font-bold text-4xl">
