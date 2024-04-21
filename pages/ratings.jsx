@@ -122,65 +122,65 @@ export default function Ratings() {
     [session]
   );
 
-  const getTracksFromRanking = useCallback(
-    async (trackIds) => {
-      if (session && session.accessToken) {
-        const response = await fetch(
-          `https://api.spotify.com/v1/tracks?ids=${trackIds
-            .map((track) => track)
-            .join(",")}`,
-          {
-            headers: {
-              Authorization: `Bearer ${session.accessToken}`,
-            },
-          }
-        );
-        const data = await response.json();
-        setTrackData(data);
-      }
-    },
-    [session]
-  );
+  // const getTracksFromRanking = useCallback(
+  //   async (trackIds) => {
+  //     if (session && session.accessToken) {
+  //       const response = await fetch(
+  //         `https://api.spotify.com/v1/tracks?ids=${trackIds
+  //           .map((track) => track)
+  //           .join(",")}`,
+  //         {
+  //           headers: {
+  //             Authorization: `Bearer ${session.accessToken}`,
+  //           },
+  //         }
+  //       );
+  //       const data = await response.json();
+  //       setTrackData(data);
+  //     }
+  //   },
+  //   [session]
+  // );
 
-  const getAlbumsFromRanking = useCallback(
-    async (albumIds) => {
-      if (session && session.accessToken) {
-        const response = await fetch(
-          `https://api.spotify.com/v1/albums?ids=${albumIds
-            .map((album) => album)
-            .join(",")}`,
-          {
-            headers: {
-              Authorization: `Bearer ${session.accessToken}`,
-            },
-          }
-        );
-        const data = await response.json();
-        setAlbumData(data);
-      }
-    },
-    [session]
-  );
+  // const getAlbumsFromRanking = useCallback(
+  //   async (albumIds) => {
+  //     if (session && session.accessToken) {
+  //       const response = await fetch(
+  //         `https://api.spotify.com/v1/albums?ids=${albumIds
+  //           .map((album) => album)
+  //           .join(",")}`,
+  //         {
+  //           headers: {
+  //             Authorization: `Bearer ${session.accessToken}`,
+  //           },
+  //         }
+  //       );
+  //       const data = await response.json();
+  //       setAlbumData(data);
+  //     }
+  //   },
+  //   [session]
+  // );
 
-  const getArtistsFromRanking = useCallback(
-    async (artistIds) => {
-      if (session && session.accessToken) {
-        const response = await fetch(
-          `https://api.spotify.com/v1/artists?ids=${artistIds
-            .map((artist) => artist)
-            .join(",")}`,
-          {
-            headers: {
-              Authorization: `Bearer ${session.accessToken}`,
-            },
-          }
-        );
-        const data = await response.json();
-        setArtistData(data);
-      }
-    },
-    [session]
-  );
+  // const getArtistsFromRanking = useCallback(
+  //   async (artistIds) => {
+  //     if (session && session.accessToken) {
+  //       const response = await fetch(
+  //         `https://api.spotify.com/v1/artists?ids=${artistIds
+  //           .map((artist) => artist)
+  //           .join(",")}`,
+  //         {
+  //           headers: {
+  //             Authorization: `Bearer ${session.accessToken}`,
+  //           },
+  //         }
+  //       );
+  //       const data = await response.json();
+  //       setArtistData(data);
+  //     }
+  //   },
+  //   [session]
+  // );
 
   function handleDragEnd(event, itemType) {
     const { active, over } = event;
@@ -290,25 +290,26 @@ export default function Ratings() {
           },
         }
       );
+      console.log(response);
       const data = await response.json();
       return data;
     }
   }
 
-  async function searchTrack(searchTerm) {
-    if (session && session.accessToken && searchTerm) {
-      const response = await fetch(
-        `https://api.spotify.com/v1/search?q=${searchTerm}&type=track&limit=10`,
-        {
-          headers: {
-            Authorization: `Bearer ${session.accessToken}`,
-          },
-        }
-      );
-      const data = await response.json();
-      return data;
-    }
-  }
+  // async function searchTrack(searchTerm) {
+  //   if (session && session.accessToken && searchTerm) {
+  //     const response = await fetch(
+  //       `https://api.spotify.com/v1/search?q=${searchTerm}&type=track&limit=10`,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${session.accessToken}`,
+  //         },
+  //       }
+  //     );
+  //     const data = await response.json();
+  //     return data;
+  //   }
+  // }
 
   const handleItemClick = (itemId, itemType) => {
     const setFunction = setFunctions[itemType];
@@ -458,7 +459,7 @@ export default function Ratings() {
                       const searchTerm =
                         document.getElementById("searchTerm").value;
                       if (searchTerm) {
-                        searchTrack(searchTerm).then((data) => {
+                        searchItem(searchTerm, "track").then((data) => {
                           setSearchResults(data.tracks.items);
                         });
                       }
