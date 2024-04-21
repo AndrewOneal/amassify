@@ -31,12 +31,14 @@ const pb = new PocketBase("https://amassify.pockethost.io");
 
 export default function Ratings() {
   const { data: session } = useSession();
+  const [userId, setUserId] = useState("");
   const [trackRatings, setTrackRatings] = useState([]);
   const [albumRatings, setAlbumRatings] = useState([]);
   const [artistRatings, setArtistRatings] = useState([]);
   const [trackData, setTrackData] = useState([]);
+  const [albumData, setAlbumData] = useState([]);
+  const [artistData, setArtistData] = useState([]);
 
-  const [items, setItems] = useState(["A", "B", "C"]);
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -48,16 +50,43 @@ export default function Ratings() {
     const { active, over } = event;
 
     if (active.id !== over.id) {
-      setItems((items) => {
+      setTrackRatings((items) => {
         const oldIndex = items.indexOf(active.id);
         const newIndex = items.indexOf(over.id);
 
         const newArray = arrayMove(items, oldIndex, newIndex);
 
-        console.log(newArray);
+        updateDbTracks(newArray);
 
         return newArray;
       });
+    }
+  }
+
+  async function updateDbTracks(tracks) {
+    const retryDelay = 1000;
+    const maxRetries = 3;
+
+    let retries = 0;
+    let record;
+
+    console.log(userId);
+
+    while (!record && retries < maxRetries) {
+      try {
+        record = await pb
+          .collection("ratings")
+          .getFirstListItem(`spotify_user_ID="${userId}"`);
+        const response = await pb
+          .collection("ratings")
+          .update(record.id, { tracks: tracks });
+        console.log(response);
+      } catch (error) {
+        console.log(error);
+        console.error(`Attempt ${retries + 1} failed. Retrying after delay...`);
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        retries++;
+      }
     }
   }
 
@@ -84,6 +113,7 @@ export default function Ratings() {
         },
       });
       const data = await response.json();
+      setUserId(data.id);
 
       const retryDelay = 1000;
       const maxRetries = 3;
@@ -123,45 +153,90 @@ export default function Ratings() {
     }
   }, [session]);
 
-  const getTracksFromRanking = useCallback(async () => {
-    console.log(trackRatings.map((track) => track.id).join(","));
-    console.log(albumRatings);
-    console.log(artistRatings);
-    if (session && session.accessToken) {
-      const response = await fetch(
-        `https://api.spotify.com/v1/tracks?ids=${trackRatings
-          .map((track) => track.id)
-          .join(",")}`,
-        {
-          headers: {
-            Authorization: `Bearer ${session.accessToken}`,
-          },
-        }
-      );
-      console.log(response);
-      // setTrackData(response.json());
-    }
-  }, [session]);
-
-  async function getTrack() {
-    const response = await fetch(
-      "https://api.spotify.com/v1/albums/3myqn4myBolKFhGs0s7lM7",
-      {
-        headers: {
-          Authorization: `Bearer ${session.accessToken}`,
-        },
+  const getTracksFromRanking = useCallback(
+    async (trackIds) => {
+      if (session && session.accessToken) {
+        const response = await fetch(
+          `https://api.spotify.com/v1/tracks?ids=${trackIds
+            .map((track) => track)
+            .join(",")}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+          }
+        );
+        const data = await response.json();
+        setTrackData(data);
       }
-    );
-    console.log(response);
-  }
+    },
+    [session]
+  );
+
+  const getAlbumsFromRanking = useCallback(
+    async (albumIds) => {
+      if (session && session.accessToken) {
+        const response = await fetch(
+          `https://api.spotify.com/v1/albums?ids=${albumIds
+            .map((album) => album)
+            .join(",")}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+          }
+        );
+        const data = await response.json();
+        setAlbumData(data);
+      }
+    },
+    [session]
+  );
+
+  const getArtistsFromRanking = useCallback(
+    async (artistIds) => {
+      if (session && session.accessToken) {
+        const response = await fetch(
+          `https://api.spotify.com/v1/artists?ids=${artistIds
+            .map((artist) => artist)
+            .join(",")}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+          }
+        );
+        const data = await response.json();
+        setArtistData(data);
+      }
+    },
+    [session]
+  );
 
   useEffect(() => {
     async function fetchData() {
       await getProfileDataAndCheckRankings();
-      // await getTracksFromRanking();
     }
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (trackRatings.length > 0) {
+      getTracksFromRanking(trackRatings);
+    }
+  }, [trackRatings]);
+
+  useEffect(() => {
+    if (albumRatings.length > 0) {
+      getAlbumsFromRanking(albumRatings);
+    }
+  }, [albumRatings]);
+
+  useEffect(() => {
+    if (artistRatings.length > 0) {
+      getArtistsFromRanking(artistRatings);
+    }
+  }, [artistRatings]);
 
   return (
     <main>
@@ -175,8 +250,11 @@ export default function Ratings() {
           Click Me!
         </button>
 
-        <SortableContext items={items} strategy={verticalListSortingStrategy}>
-          {items.map((id) => (
+        <SortableContext
+          items={trackRatings}
+          strategy={verticalListSortingStrategy}
+        >
+          {trackRatings.map((id) => (
             <SortableItem key={id} id={id} />
           ))}
         </SortableContext>
