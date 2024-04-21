@@ -18,87 +18,74 @@ const pb = new PocketBase("https://amassify.pockethost.io");
 
 export default function Ratings() {
   const { data: session } = useSession();
-  const [accessToken, setAccessToken] = useState(null);
   const [trackRatings, setTrackRatings] = useState([]);
   const [albumRatings, setAlbumRatings] = useState([]);
   const [artistRatings, setArtistRatings] = useState([]);
   const [trackData, setTrackData] = useState([]);
 
-  // const getProfileDataAndCheckRankings = useCallback(async () => {
-  //   if (accessToken) {
-  //     const response = await fetch("https://api.spotify.com/v1/me", {
-  //       headers: {
-  //         Authorization: `Bearer ${accessToken}`,
-  //       },
-  //     });
-  //     const data = await response.json();
+  const getProfileDataAndCheckRankings = useCallback(async () => {
+    console.log("getprofileandcheckrankings called");
+    if (session && session.accessToken) {
+      const response = await fetch("https://api.spotify.com/v1/me", {
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+      });
+      const data = await response.json();
 
-  //     if (data.id) {
-  //       try {
-  //         const record = await pb
-  //           .collection("ratings")
-  //           .getFirstListItem(`spotify_user_ID="${data.id}"`);
-  //         setTrackRatings(record.tracks);
-  //         setAlbumRatings(record.albums);
-  //         setArtistRatings(record.artists);
-  //       } catch (error) {
-  //         try {
-  //           const record = await pb.collection("ratings").create({
-  //             spotify_user_ID: data.id,
-  //             tracks: [],
-  //             albums: [],
-  //             artists: [],
-  //           });
-  //           setTrackRatings(record.tracks);
-  //           setAlbumRatings(record.albums);
-  //           setArtistRatings(record.artists);
-  //         } catch (error) {
-  //           setTrackRatings([]);
-  //           setAlbumRatings([]);
-  //           setArtistRatings([]);
-  //         }
-  //       }
-  //     }
-  //   }
-  // }, [accessToken]);
+      if (data.id) {
+        try {
+          const record = await pb
+            .collection("ratings")
+            .getFirstListItem(`spotify_user_ID="${data.id}"`);
+          setTrackRatings(record.tracks);
+          setAlbumRatings(record.albums);
+          setArtistRatings(record.artists);
+        } catch (error) {
+          try {
+            const record = await pb.collection("ratings").create({
+              spotify_user_ID: data.id,
+              tracks: [],
+              albums: [],
+              artists: [],
+            });
+            setTrackRatings(record.tracks);
+            setAlbumRatings(record.albums);
+            setArtistRatings(record.artists);
+          } catch (error) {
+            setTrackRatings([]);
+            setAlbumRatings([]);
+            setArtistRatings([]);
+          }
+        }
+      }
+    }
+  }, [session]);
 
-  // async function getTracksFromRanking() {
-  //   if (accessToken) {
+  // const getTracksFromRanking = useCallback(async () => {
+  //   console.log("getTracksFromRanking called");
+  //   if (session && session.accessToken) {
   //     const response = await fetch(
   //       `https://api.spotify.com/v1/tracks?ids=${trackRatings
   //         .map((track) => track.id)
   //         .join(",")}`,
   //       {
   //         headers: {
-  //           Authorization: `Bearer ${accessToken}`,
+  //           Authorization: `Bearer ${session.accessToken}`,
   //         },
   //       }
   //     );
   //     setTrackData(response.json());
   //   }
-  // }
+  // }, [session, trackRatings]);
 
-  // useEffect(() => {
-  //   if (session && session.accessToken) {
-  //     setAccessToken(session.accessToken);
-  //   }
-  // }, [session]);
-
-  // useEffect(() => {
-  //   getTracksFromRanking();
-  // });
-
-  // useEffect(() => {
-  //   getProfileDataAndCheckRankings();
-  // console.log(trackRatings);
-  // console.log(albumRatings);
-  // console.log(artistRatings);
-  // }, [
-  //   albumRatings,
-  //   artistRatings,
-  //   getProfileDataAndCheckRankings,
-  //   trackRatings,
-  // ]);
+  useEffect(() => {
+    async function fetchData() {
+      await getProfileDataAndCheckRankings();
+      // await getTracksFromRanking();
+    }
+    fetchData();
+  }, []);
 
   return (
     <main>
@@ -109,7 +96,6 @@ export default function Ratings() {
             <p className="text-white pt-10 pb-10 py-2 font-bold text-4xl">
               Top Played Tracks
             </p>
-            <button onClick={getTracksFromRanking}>Test</button>
             <div className="max-h-[20rem] overflow-y-auto">
               <table className="table">
                 <thead>
