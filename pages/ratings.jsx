@@ -46,65 +46,6 @@ export default function Ratings() {
     })
   );
 
-  function handleDragEnd(event) {
-    const { active, over } = event;
-
-    if (active.id !== over.id) {
-      setTrackRatings((items) => {
-        const oldIndex = items.indexOf(active.id);
-        const newIndex = items.indexOf(over.id);
-
-        const newArray = arrayMove(items, oldIndex, newIndex);
-
-        updateDbTracks(newArray);
-
-        return newArray;
-      });
-    }
-  }
-
-  async function updateDbTracks(tracks) {
-    const retryDelay = 1000;
-    const maxRetries = 3;
-
-    let retries = 0;
-    let record;
-
-    console.log(userId);
-
-    while (!record && retries < maxRetries) {
-      try {
-        record = await pb
-          .collection("ratings")
-          .getFirstListItem(`spotify_user_ID="${userId}"`);
-        const response = await pb
-          .collection("ratings")
-          .update(record.id, { tracks: tracks });
-        console.log(response);
-      } catch (error) {
-        console.log(error);
-        console.error(`Attempt ${retries + 1} failed. Retrying after delay...`);
-        await new Promise((resolve) => setTimeout(resolve, retryDelay));
-        retries++;
-      }
-    }
-  }
-
-  function addItem() {
-    setItems((items) => {
-      let letter = String.fromCharCode(
-        items[items.length - 1].charCodeAt(0) + 1
-      );
-
-      if (items.includes(letter)) {
-        console.log("already exists");
-        return items;
-      } else {
-        return [...items, letter];
-      }
-    });
-  }
-
   const getProfileDataAndCheckRankings = useCallback(async () => {
     if (session && session.accessToken) {
       const response = await fetch("https://api.spotify.com/v1/me", {
@@ -212,6 +153,65 @@ export default function Ratings() {
     },
     [session]
   );
+
+  function handleDragEnd(event) {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      setTrackRatings((items) => {
+        const oldIndex = items.indexOf(active.id);
+        const newIndex = items.indexOf(over.id);
+
+        const newArray = arrayMove(items, oldIndex, newIndex);
+
+        updateDbTracks(newArray);
+
+        return newArray;
+      });
+    }
+  }
+
+  async function updateDbTracks(tracks) {
+    const retryDelay = 1000;
+    const maxRetries = 3;
+
+    let retries = 0;
+    let record;
+
+    console.log(userId);
+
+    while (!record && retries < maxRetries) {
+      try {
+        record = await pb
+          .collection("ratings")
+          .getFirstListItem(`spotify_user_ID="${userId}"`);
+        const response = await pb
+          .collection("ratings")
+          .update(record.id, { tracks: tracks });
+        console.log(response);
+      } catch (error) {
+        console.log(error);
+        console.error(`Attempt ${retries + 1} failed. Retrying after delay...`);
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        retries++;
+      }
+    }
+  }
+
+  function addItem() {
+    setItems((items) => {
+      let letter = String.fromCharCode(
+        items[items.length - 1].charCodeAt(0) + 1
+      );
+
+      if (items.includes(letter)) {
+        console.log("already exists");
+        return items;
+      } else {
+        return [...items, letter];
+      }
+    });
+  }
 
   useEffect(() => {
     async function fetchData() {
