@@ -193,6 +193,29 @@ export default function Ratings() {
     }
   }
 
+  async function deleteTrackRating(id) {
+    setTrackRatings((items) => {
+      const newArray = items.filter((item) => item !== id);
+      updateDbTracks(newArray);
+      return newArray;
+    });
+  }
+
+  async function searchTrack(searchTerm) {
+    if (session && session.accessToken) {
+      const response = await fetch(
+        `https://api.spotify.com/v1/search?q=${searchTerm}&type=track&limit=10`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        }
+      );
+      const data = await response.json();
+      return data;
+    }
+  }
+
   function addItem() {
     setItems((items) => {
       let letter = String.fromCharCode(
@@ -206,10 +229,6 @@ export default function Ratings() {
         return [...items, letter];
       }
     });
-  }
-
-  function logTrackData() {
-    console.log(Array.isArray(trackData.tracks));
   }
 
   useEffect(() => {
@@ -240,53 +259,89 @@ export default function Ratings() {
   return (
     <main>
       <NavBar />
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <button type="button" onClick={logTrackData}>
-          Click Me!
-        </button>
-
-        <div className="table-container">
-          <p className="text-white pt-10 pb-10 py-2 font-bold text-4xl">
-            Top Played Tracks
-          </p>
-          <div className="max-h-[20rem] overflow-y-auto">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th className="text-left px-12"></th>
-                  <th className="text-left px-12">Track</th>
-                  <th className="text-left px-12">Artist</th>
-                  <th className="text-left px-12">Album</th>
-                  <th className="text-left px-12"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {trackData && trackData.tracks && (
-                  <SortableContext
-                    items={trackData.tracks}
-                    strategy={verticalListSortingStrategy}
+      <div className="pt-5 pl-20 pr-20">
+        <div className="flex flex-col">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <div className="table-container">
+              <p className="text-white pt-10 pb-10 py-2 font-bold text-4xl">
+                Your Top Track Rankings
+              </p>
+              <button
+                className="btn"
+                onClick={() =>
+                  document.getElementById("my_modal_3").showModal()
+                }
+              >
+                Add Track
+              </button>
+              <dialog id="my_modal_3" className="modal">
+                <div className="modal-box">
+                  <form method="dialog">
+                    <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                      ✕
+                    </button>
+                  </form>
+                  <h3 className="font-bold text-lg">Search for a track</h3>
+                  <input
+                    type="text"
+                    id="searchTerm"
+                    className="input"
+                    placeholder="Enter track name"
+                  />
+                  <button
+                    className="btn"
+                    onClick={() => {
+                      const searchTerm =
+                        document.getElementById("searchTerm").value;
+                      searchTrack(searchTerm).then((data) => console.log(data));
+                    }}
                   >
-                    {Array.isArray(trackData.tracks) &&
-                      trackData.tracks.map((track, index) => (
-                        <SortableItem
-                          key={index}
-                          id={trackRatings[index]}
-                          track={track}
-                          rating={trackRatings[index]}
-                          index={index}
-                        />
-                      ))}
-                  </SortableContext>
-                )}
-              </tbody>
-            </table>
-          </div>
+                    Search
+                  </button>
+                </div>
+              </dialog>
+
+              <div className="max-h-[20rem] overflow-y-auto">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th className="text-left px-12"></th>
+                      <th className="text-left px-12">Track</th>
+                      <th className="text-left px-12">Artist</th>
+                      <th className="text-left px-12">Album</th>
+                      <th className="text-left px-12"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {trackData && trackData.tracks && (
+                      <SortableContext
+                        items={trackData.tracks}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        {Array.isArray(trackData.tracks) &&
+                          trackData.tracks.map((track, index) => (
+                            <SortableItem
+                              key={index}
+                              id={trackRatings[index]}
+                              track={track}
+                              rating={trackRatings[index]}
+                              index={index}
+                              deleteTrackRating={deleteTrackRating}
+                            />
+                          ))}
+                      </SortableContext>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </DndContext>
         </div>
-      </DndContext>
+      </div>
     </main>
   );
 }

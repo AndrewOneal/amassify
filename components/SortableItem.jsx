@@ -3,9 +3,15 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { userAgent } from "next/server";
 
-export function SortableItem({ id, track, rating, index }) {
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id });
+export function SortableItem({ id, track, rating, index, ...props }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -15,11 +21,11 @@ export function SortableItem({ id, track, rating, index }) {
   useEffect(() => {}, [rating, track]);
 
   return (
-    <tr ref={setNodeRef} style={{ ...style }} {...attributes} {...listeners}>
-      <td>
+    <tr ref={setNodeRef} style={{ ...style }} {...attributes}>
+      <td {...listeners}>
         <div className="font-bold">#{index + 1}</div>
       </td>
-      <td>
+      <td {...listeners}>
         <div className="flex items-center gap-3">
           <div className="avatar">
             <div className="w-12 h-12">
@@ -36,11 +42,22 @@ export function SortableItem({ id, track, rating, index }) {
           <div className="font-bold">{track.name}</div>
         </div>
       </td>
-      <th>
+      <th {...listeners}>
         <div className="font-bold">{track.artists[0].name}</div>
       </th>
-      <th>
+      <th {...listeners}>
         <div className="font-bold">{track.album.name}</div>
+      </th>
+      <th>
+        <button
+          disabled={isDragging}
+          onMouseDown={(event) => event.stopPropagation()}
+          onClick={() => {
+            props.deleteTrackRating(id);
+          }}
+        >
+          Delete
+        </button>
       </th>
     </tr>
   );
