@@ -100,15 +100,27 @@ export default function Ratings() {
         setAlbumRatings(record.albums);
         setArtistRatings(record.artists);
       } else {
-        const record = await pb.collection("ratings").create({
-          spotify_user_ID: data.id,
-          tracks: [],
-          albums: [],
-          artists: [],
-        });
-        setTrackRatings(record.tracks);
-        setAlbumRatings(record.albums);
-        setArtistRatings(record.artists);
+        while (!record && retries < maxRetries) {
+          try {
+            const record = await pb.collection("ratings").create({
+              spotify_user_ID: data.id,
+              tracks: [],
+              albums: [],
+              artists: [],
+            });
+          } catch (error) {
+            console.error(
+              `Attempt ${retries + 1} failed. Retrying after delay...`
+            );
+            await new Promise((resolve) => setTimeout(resolve, retryDelay));
+            retries++;
+          }
+        }
+        if (record) {
+          setTrackRatings(record.tracks);
+          setAlbumRatings(record.albums);
+          setArtistRatings(record.artists);
+        }
       }
     }
   }, [session]);
