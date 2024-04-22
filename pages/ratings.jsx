@@ -129,11 +129,11 @@ export default function Ratings() {
     [session]
   );
 
+  // working
   function handleDragEnd(event, itemType) {
     const { active, over } = event;
 
     if (active.id !== over.id) {
-      console.log(itemType);
       const setFunction = setFunctions[itemType];
 
       setFunction((items) => {
@@ -146,23 +146,7 @@ export default function Ratings() {
     }
   }
 
-  // function handleDragEnd(event) {
-  //   const { active, over } = event;
-
-  //   if (active.id !== over.id) {
-  //     setTrackRatings((items) => {
-  //       const oldIndex = items.indexOf(active.id);
-  //       const newIndex = items.indexOf(over.id);
-
-  //       const newArray = arrayMove(items, oldIndex, newIndex);
-
-  //       updateDbTracks(newArray);
-
-  //       return newArray;
-  //     });
-  //   }
-  // }
-
+  // working
   async function updateDbItems(items, itemType) {
     const retryDelay = 1000;
     const maxRetries = 3;
@@ -186,49 +170,19 @@ export default function Ratings() {
     }
   }
 
-  // async function updateDbTracks(tracks) {
-  //   const retryDelay = 1000;
-  //   const maxRetries = 3;
-
-  //   let retries = 0;
-  //   let record;
-
-  //   while (!record && retries < maxRetries) {
-  //     try {
-  //       record = await pb
-  //         .collection("ratings")
-  //         .getFirstListItem(`spotify_user_ID="${userId}"`);
-  //       const response = await pb
-  //         .collection("ratings")
-  //         .update(record.id, { tracks: tracks });
-  //     } catch (error) {
-  //       console.error(`Attempt ${retries + 1} failed. Retrying after delay...`);
-  //       await new Promise((resolve) => setTimeout(resolve, retryDelay));
-  //       retries++;
-  //     }
-  //   }
-  // }
-
+  // working
   async function deleteItemRating(index, itemType) {
     const setFunction = setFunctions[itemType];
 
     setFunction((items) => {
-      const newArray = [...items]; // create a copy of the items array
-      newArray.splice(index, 1); // remove the item at the given index
+      const newArray = [...items];
+      newArray.splice(index, 1);
       updateDbItems(newArray, itemType);
       return newArray;
     });
   }
 
-  // async function deleteTrackRating(id) {
-  //   setTrackRatings((items) => {
-  //     const newArray = items.filter((item) => item !== id);
-  //     setTrackRatings(newArray);
-  //     updateDbTracks(newArray);
-  //     return newArray;
-  //   });
-  // }
-
+  // working
   async function searchItem(searchTerm, itemType) {
     if (session && session.accessToken && searchTerm) {
       const response = await fetch(
@@ -244,21 +198,12 @@ export default function Ratings() {
     }
   }
 
+  // working
   const handleItemClick = (itemId, itemType) => {
     const setFunction = setFunctions[itemType];
     setFunction((prevItemRatings) => {
       const updatedTrackRatings = [...prevItemRatings, itemId];
       updateDbItems(updatedTrackRatings, itemType);
-      return updatedTrackRatings;
-    });
-    setSearchResults([]);
-    document.getElementById("my_modal_3").close();
-  };
-
-  const handleTrackClick = (trackId) => {
-    setTrackRatings((prevTrackRatings) => {
-      const updatedTrackRatings = [...prevTrackRatings, trackId];
-      updateDbTracks(updatedTrackRatings);
       return updatedTrackRatings;
     });
     setSearchResults([]);
@@ -306,7 +251,10 @@ export default function Ratings() {
             <tbody>
               {searchResults &&
                 searchResults.map((track, index) => (
-                  <tr key={index} onClick={() => handleTrackClick(track.id)}>
+                  <tr
+                    key={index}
+                    onClick={() => handleItemClick(track.id, "tracks")}
+                  >
                     <td>
                       <div className="flex items-center gap-3">
                         <div className="avatar">
