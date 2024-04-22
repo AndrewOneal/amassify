@@ -17,6 +17,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { SortableItem } from "@/components/SortableItem";
+import { SortableAlbum } from "@/components/SortableAlbum";
+import { SortableArtist } from "@/components/SortableArtist";
 
 // 1. get all existing ratings from the database
 // 2. query the spotify api for the track data
@@ -38,7 +40,11 @@ export default function Ratings() {
   const [albumData, setAlbumData] = useState([]);
   const [artistData, setArtistData] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
+  const [albumSearchResults, setAlbumSearchResults] = useState([]);
+  const [artistSearchResults, setArtistSearchResults] = useState([]);
   const [resultsDisplay, setResultsDisplay] = React.useState(null);
+  const [albumResultsDisplay, setAlbumResultsDisplay] = React.useState(null);
+  const [artistResultsDisplay, setArtistResultsDisplay] = React.useState(null);
 
   const setFunctions = {
     tracks: setTrackRatings,
@@ -188,12 +194,13 @@ export default function Ratings() {
           },
         }
       );
+      console.log(response);
       const data = await response.json();
       return data;
     }
   }
 
-  const handleItemClick = (itemId, itemType) => {
+  const handleItemClick = (itemId, itemType, modalId) => {
     const setFunction = setFunctions[itemType];
     setFunction((prevItemRatings) => {
       const updatedTrackRatings = [...prevItemRatings, itemId];
@@ -201,7 +208,9 @@ export default function Ratings() {
       return updatedTrackRatings;
     });
     setSearchResults([]);
-    document.getElementById("my_modal_3").close();
+    setAlbumSearchResults([]);
+    setArtistSearchResults([]);
+    document.getElementById(modalId).close();
   };
 
   useEffect(() => {
@@ -247,7 +256,9 @@ export default function Ratings() {
                 searchResults.map((track, index) => (
                   <tr
                     key={index}
-                    onClick={() => handleItemClick(track.id, "tracks")}
+                    onClick={() =>
+                      handleItemClick(track.id, "tracks", "my_modal_3")
+                    }
                   >
                     <td>
                       <div className="flex items-center gap-3">
@@ -281,6 +292,104 @@ export default function Ratings() {
       setResultsDisplay(newDisplay);
     }
   }, [searchResults]);
+
+  useEffect(() => {
+    if (albumSearchResults && albumSearchResults.length > 0) {
+      const newDisplay = (
+        <div>
+          <p>Results:</p>
+          <table className="table">
+            <thead>
+              <tr>
+                <th className="text-left px-12">Album</th>
+                <th className="text-left px-12">Artist</th>
+              </tr>
+            </thead>
+            <tbody>
+              {albumSearchResults &&
+                albumSearchResults.map((album, index) => (
+                  <tr
+                    key={index}
+                    onClick={() =>
+                      handleItemClick(album.id, "albums", "my_modal_2")
+                    }
+                  >
+                    <td>
+                      <div className="flex items-center gap-3">
+                        <div className="avatar">
+                          <div className="w-12 h-12">
+                            <img
+                              src={
+                                album.images.length > 0
+                                  ? album.images[0].url
+                                  : "https://upload.wikimedia.org/wikipedia/commons/b/b5/Windows_10_Default_Profile_Picture.svg"
+                              }
+                              alt="album_img"
+                            />
+                          </div>
+                        </div>
+                        <div className="font-bold">{album.name}</div>
+                      </div>
+                    </td>
+                    <th>
+                      <div className="font-bold">{album.artists[0].name}</div>
+                    </th>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      );
+      setAlbumResultsDisplay(newDisplay);
+    }
+  }, [albumSearchResults]);
+
+  useEffect(() => {
+    if (artistSearchResults && artistSearchResults.length > 0) {
+      const newDisplay = (
+        <div>
+          <p>Results:</p>
+          <table className="table">
+            <thead>
+              <tr>
+                <th className="text-left px-12">Artist</th>
+              </tr>
+            </thead>
+            <tbody>
+              {artistSearchResults &&
+                artistSearchResults.map((artist, index) => (
+                  <tr
+                    key={index}
+                    onClick={() =>
+                      handleItemClick(artist.id, "artists", "my_modal_1")
+                    }
+                  >
+                    <td>
+                      <div className="flex items-center gap-3">
+                        <div className="avatar">
+                          <div className="w-12 h-12">
+                            <img
+                              src={
+                                artist.images.length > 0
+                                  ? artist.images[0].url
+                                  : "https://upload.wikimedia.org/wikipedia/commons/b/b5/Windows_10_Default_Profile_Picture.svg"
+                              }
+                              alt="album_img"
+                            />
+                          </div>
+                        </div>
+                        <div className="font-bold">{artist.name}</div>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      );
+      setArtistResultsDisplay(newDisplay);
+    }
+  }, [artistSearchResults]);
 
   return (
     <main>
@@ -373,6 +482,199 @@ export default function Ratings() {
                               index={index}
                               deleteTrackRating={() =>
                                 deleteItemRating(index, "tracks")
+                              }
+                            />
+                          ))}
+                      </SortableContext>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </DndContext>
+
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={(event) => handleDragEnd(event, "albums")}
+          >
+            <div className="table-container">
+              <p className="text-white pt-10 pb-10 py-2 font-bold text-4xl">
+                Your Top Album Rankings
+              </p>
+              <button
+                className="btn"
+                onClick={() =>
+                  document.getElementById("my_modal_2").showModal()
+                }
+              >
+                Add Album
+              </button>
+              <dialog
+                id="my_modal_2"
+                className="modal"
+                onClose={() => setAlbumSearchResults([])}
+              >
+                <div className="modal-box max-w-5xl">
+                  <form method="dialog">
+                    <button
+                      className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                      onClick={() => {
+                        document.getElementById("my_modal_2").close();
+                        setAlbumSearchResults([]);
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </form>
+                  <h3 className="font-bold text-lg">Search for an album</h3>
+                  <input
+                    type="text"
+                    id="searchTermAlbum"
+                    className="input"
+                    placeholder="Enter album name"
+                  />
+                  <button
+                    className="btn"
+                    onClick={() => {
+                      const searchTerm =
+                        document.getElementById("searchTermAlbum").value;
+                      if (searchTerm) {
+                        searchItem(searchTerm, "album").then((data) => {
+                          console.log(data);
+                          setAlbumSearchResults(data.albums.items);
+                        });
+                      }
+                    }}
+                  >
+                    Search
+                  </button>
+                  {albumResultsDisplay}
+                </div>
+              </dialog>
+
+              <div className="max-h-[20rem] overflow-y-auto">
+                <table className="table ">
+                  <thead>
+                    <tr>
+                      <th className="text-left px-12"></th>
+                      <th className="text-left px-12">Album</th>
+                      <th className="text-left px-12">Artist</th>
+                      <th className="text-left px-12"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {albumData && albumData.albums && (
+                      <SortableContext
+                        items={albumData.albums}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        {Array.isArray(albumData.albums) &&
+                          albumData.albums.map((album, index) => (
+                            <SortableAlbum
+                              key={index}
+                              id={albumRatings[index]}
+                              item={album}
+                              rating={albumRatings[index]}
+                              index={index}
+                              deleteAlbumRating={() =>
+                                deleteItemRating(index, "albums")
+                              }
+                            />
+                          ))}
+                      </SortableContext>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </DndContext>
+
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={(event) => handleDragEnd(event, "artists")}
+          >
+            <div className="table-container">
+              <p className="text-white pt-10 pb-10 py-2 font-bold text-4xl">
+                Your Top Artist Rankings
+              </p>
+              <button
+                className="btn"
+                onClick={() =>
+                  document.getElementById("my_modal_1").showModal()
+                }
+              >
+                Add Artist
+              </button>
+              <dialog
+                id="my_modal_1"
+                className="modal"
+                onClose={() => setArtistSearchResults([])}
+              >
+                <div className="modal-box max-w-5xl">
+                  <form method="dialog">
+                    <button
+                      className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                      onClick={() => {
+                        document.getElementById("my_modal_1").close();
+                        setArtistSearchResults([]);
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </form>
+                  <h3 className="font-bold text-lg">Search for an Artist</h3>
+                  <input
+                    type="text"
+                    id="searchTermArtist"
+                    className="input"
+                    placeholder="Enter artist name"
+                  />
+                  <button
+                    className="btn"
+                    onClick={() => {
+                      const searchTerm =
+                        document.getElementById("searchTermArtist").value;
+                      if (searchTerm) {
+                        searchItem(searchTerm, "artist").then((data) => {
+                          console.log(data);
+                          setArtistSearchResults(data.artists.items);
+                        });
+                      }
+                    }}
+                  >
+                    Search
+                  </button>
+                  {artistResultsDisplay}
+                </div>
+              </dialog>
+
+              <div className="max-h-[20rem] overflow-y-auto">
+                <table className="table ">
+                  <thead>
+                    <tr>
+                      <th className="text-left px-12"></th>
+                      <th className="text-left px-12">Artist</th>
+                      <th className="text-left px-12"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {artistData && artistData.artists && (
+                      <SortableContext
+                        items={artistData.artists}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        {Array.isArray(artistData.artists) &&
+                          artistData.artists.map((artist, index) => (
+                            <SortableArtist
+                              key={index}
+                              id={artistRatings[index]}
+                              item={artist}
+                              rating={artistRatings[index]}
+                              index={index}
+                              deleteArtistRating={() =>
+                                deleteItemRating(index, "artists")
                               }
                             />
                           ))}
