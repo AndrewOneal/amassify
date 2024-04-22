@@ -323,142 +323,143 @@ export default function Insights() {
   }, [getRecentAudioFeatures]);
 
   return (
-    <main>
-      <NavBar className="z-1" />
-      <div className="pt-5 pl-20 pr-20">
-        <div className="flex flex-col">
-          <p className="text-white py-2 font-bold text-5xl">
-            Welcome to your insights, {profileData.display_name}
-          </p>
-          <div className="timeframe-selector pt-10">
-            <select
-              value={timeframe}
-              onChange={(e) => {
-                setTimeframe(e.target.value);
-              }}
-              className="select select-bordered w-full max-w-xs"
-            >
-              <option value="short_term">4 Weeks</option>
-              <option value="medium_term">6 Months</option>
-              <option value="long_term">Lifetime</option>
-            </select>
-          </div>
-          <div className="grid grid-cols-4 gap-8 pt-10 place-items-center justify-center items-start">
-            <div className="card w-96 bg-base-100 shadow-xl">
-              <div className="card-body">
-                <h2 className="card-title">
-                  Average popularity based on your top tracks:
-                </h2>
-                <p className="text-2xl font-semibold text-center text-green-500">
-                  {averageTrackPopularity}/100
-                </p>
-                <p className="text-green-500">
-                  (100 being the most popular track)
-                </p>
-              </div>
+    <div className="bg-base-500 min-h-screen">
+      <main>
+        <NavBar className="z-1" />
+        <div className="pt-5 pl-20 pr-20">
+          <div className="flex flex-col">
+            <p className="text-white py-2 font-bold text-5xl">
+              Welcome to your insights, {profileData.display_name}
+            </p>
+            <div className="timeframe-selector pt-10">
+              <select
+                value={timeframe}
+                onChange={(e) => {
+                  setTimeframe(e.target.value);
+                }}
+                className="select select-bordered w-full max-w-xs"
+              >
+                <option value="short_term">4 Weeks</option>
+                <option value="medium_term">6 Months</option>
+                <option value="long_term">Lifetime</option>
+              </select>
             </div>
-            <div className="card w-96 bg-base-100 shadow-xl">
-              <div className="card-body">
-                <h2 className="card-title">
-                  Average popularity based on your top artists:
-                </h2>
-                <p className="text-2xl font-semibold text-center text-green-500">
-                  {averageArtistPopularity}/100
-                </p>
-                <p className="text-green-500">
-                  (100 being the most popular artist)
-                </p>
+            <div className="grid grid-cols-4 gap-8 pt-10 place-items-center justify-center items-start">
+              <div className="card w-96 bg-base-100 shadow-xl">
+                <div className="card-body">
+                  <h2 className="card-title">
+                    Average popularity based on your top tracks:
+                  </h2>
+                  <p className="text-2xl font-semibold text-center text-green-500">
+                    {averageTrackPopularity}/100
+                  </p>
+                  <p className="text-green-500">
+                    (100 being the most popular track)
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="card w-96 bg-base-100 shadow-xl">
-              <div className="card-body">
-                <h2 className="card-title">
-                  Top Genres Based on your top tracks:
-                </h2>
-                <ol>
-                  {topTrackGenres.map((genre, index) => (
-                    <li
-                      key={index}
-                      className="text-2xl font-semibold text-center text-green-500"
-                    >
-                      {index + 1}. {genre}
-                    </li>
-                  ))}
-                </ol>
+              <div className="card w-96 bg-base-100 shadow-xl">
+                <div className="card-body">
+                  <h2 className="card-title">
+                    Average popularity based on your top artists:
+                  </h2>
+                  <p className="text-2xl font-semibold text-center text-green-500">
+                    {averageArtistPopularity}/100
+                  </p>
+                  <p className="text-green-500">
+                    (100 being the most popular artist)
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="card w-96 bg-base-100 shadow-xl">
-              <div className="card-body">
-                <h2 className="card-title">
-                  Top Genres Based on your top artists:
-                </h2>
-                <ol>
-                  {topArtistGenres.map((genre, index) => (
-                    <li
-                      key={index}
-                      className="text-2xl font-semibold text-center text-green-500"
-                    >
-                      {index + 1}. {genre}
-                    </li>
-                  ))}
-                </ol>
+              <div className="card w-96 bg-base-100 shadow-xl">
+                <div className="card-body">
+                  <h2 className="card-title">
+                    Top Genres Based on your top tracks:
+                  </h2>
+                  <ol>
+                    {topTrackGenres.map((genre, index) => (
+                      <li
+                        key={index}
+                        className="text-2xl font-semibold text-center text-green-500"
+                      >
+                        {index + 1}. {genre}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
               </div>
-            </div>
-            <div className="card w-96 bg-base-100 shadow-xl">
-              <div className="card-body">
-                <h2 className="card-title">
-                  Top Genres Based on your recent listening history:
-                </h2>
-                <ol>
-                  {recentTrackGenres.map((genre, index) => (
-                    <li
-                      key={index}
-                      className="text-2xl font-semibold text-center text-green-500"
-                    >
-                      {index + 1}. {genre}
-                    </li>
-                  ))}
-                </ol>
+              <div className="card w-96 bg-base-100 shadow-xl">
+                <div className="card-body">
+                  <h2 className="card-title">
+                    Top Genres Based on your top artists:
+                  </h2>
+                  <ol>
+                    {topArtistGenres.map((genre, index) => (
+                      <li
+                        key={index}
+                        className="text-2xl font-semibold text-center text-green-500"
+                      >
+                        {index + 1}. {genre}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
               </div>
-            </div>
-            <div className="card w-96 bg-base-100 shadow-xl">
-              <div className="card-body">
-                <h2 className="card-title">
-                  Top Audio Features based on your top tracks:
-                </h2>
-                <ol>
-                  {topAudioFeatures.map((feature, index) => (
-                    <li
-                      key={index}
-                      className="text-2xl font-semibold text-center text-green-500"
-                    >
-                      {index + 1}. {feature}
-                    </li>
-                  ))}
-                </ol>
+              <div className="card w-96 bg-base-100 shadow-xl">
+                <div className="card-body">
+                  <h2 className="card-title">
+                    Top Genres Based on your recent listening history:
+                  </h2>
+                  <ol>
+                    {recentTrackGenres.map((genre, index) => (
+                      <li
+                        key={index}
+                        className="text-2xl font-semibold text-center text-green-500"
+                      >
+                        {index + 1}. {genre}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
               </div>
-            </div>
-            <div className="card w-96 bg-base-100 shadow-xl">
-              <div className="card-body">
-                <h2 className="card-title">
-                  Top Audio Features based on your recent listening history:
-                </h2>
-                <ol>
-                  {recentAudioFeatures.map((feature, index) => (
-                    <li
-                      key={index}
-                      className="text-2xl font-semibold text-center text-green-500"
-                    >
-                      {index + 1}. {feature}
-                    </li>
-                  ))}
-                </ol>
+              <div className="card w-96 bg-base-100 shadow-xl">
+                <div className="card-body">
+                  <h2 className="card-title">
+                    Top Audio Features based on your top tracks:
+                  </h2>
+                  <ol>
+                    {topAudioFeatures.map((feature, index) => (
+                      <li
+                        key={index}
+                        className="text-2xl font-semibold text-center text-green-500"
+                      >
+                        {index + 1}. {feature}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              </div>
+              <div className="card w-96 bg-base-100 shadow-xl">
+                <div className="card-body">
+                  <h2 className="card-title">
+                    Top Audio Features based on your recent listening history:
+                  </h2>
+                  <ol>
+                    {recentAudioFeatures.map((feature, index) => (
+                      <li
+                        key={index}
+                        className="text-2xl font-semibold text-center text-green-500"
+                      >
+                        {index + 1}. {feature}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div className="h-20"></div>
-    </main>
+      </main>
+    </div>
   );
 }
