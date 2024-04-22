@@ -2,18 +2,12 @@
 
 ## Front End
 * Login Page
-  * Logo
   * Login with spotify button
 * Profile Page
   * Profile Pic
   * Display of Username
-  * View your spotify page link??
   * Top Tracks
-    * Yellow dash and green, red arrows??
   * Top Artists
-    * Yellow dash and green, red arrows??
-  * Top Albums??
-  * Recently played
 * Ratings
   * Tab display for: 
     * Top 50 Artists
@@ -21,7 +15,7 @@
     * Top 50 Songs
   * Add button for each one, opens modal search feature within
     * Selected object for type
-    * Position to place? (could just add it at the bottom and let user drag and drop)
+  * Delete button on each item
   * Drag and Drop type to reorder
 * Data Insights
   * How popular their music taste is
