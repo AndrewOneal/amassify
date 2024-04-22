@@ -10,6 +10,13 @@ export default function Insights() {
   const [topArtists, setTopArtists] = useState([]);
   const [recentlyPlayed, setRecentlyPlayed] = useState([]);
   const [timeframe, setTimeframe] = useState("short_term");
+  const [averageTrackPopularity, setAverageTrackPopularity] = useState(null);
+  const [averageArtistPopularity, setAverageArtistPopularity] = useState(null);
+  const [topArtistGenres, setTopArtistGenres] = useState([]);
+  const [topTrackGenres, setTopTrackGenres] = useState([]);
+  const [recentTrackGenres, setRecentTrackGenres] = useState([]);
+  const [topAudioFeatures, setTopAudioFeatures] = useState([]);
+  const [recentAudioFeatures, setRecentAudioFeatures] = useState([]);
 
   const getProfileData = useCallback(async () => {
     if (session && session.accessToken) {
@@ -68,43 +75,49 @@ export default function Insights() {
     }
   }, [session]);
 
-  function getTrackAveragePopularity() {
-    let sum = 0;
-    topTracks.items.forEach((track) => {
-      sum += track.popularity;
-    });
-    return sum / topTracks.items.length;
-  }
-
-  function getArtistAveragePopularity() {
-    let sum = 0;
-    console.log(topArtists.items);
-    topArtists.items.forEach((artist) => {
-      sum += artist.popularity;
-    });
-    console.log(sum / topArtists.items.length);
-    return sum / topArtists.items.length;
-  }
-
-  function getTopArtistGenres() {
-    let genres = {};
-    topArtists.items.forEach((artist) => {
-      artist.genres.forEach((genre) => {
-        if (genres[genre]) {
-          genres[genre] += 1;
-        } else {
-          genres[genre] = 1;
-        }
+  const getTrackAveragePopularity = useCallback(() => {
+    if (topTracks && topTracks.items) {
+      let sum = 0;
+      topTracks.items.forEach((track) => {
+        sum += track.popularity;
       });
-    });
-    let sortedGenres = Object.keys(genres).sort(
-      (a, b) => genres[b] - genres[a]
-    );
-    return sortedGenres.slice(0, 5);
-  }
+      setAverageTrackPopularity(sum / topTracks.items.length);
+    }
+  }, [topTracks]);
 
-  async function getTopTrackGenres() {
-    if (session && session.accessToken) {
+  const getArtistAveragePopularity = useCallback(() => {
+    if (topArtists && topArtists.items) {
+      let sum = 0;
+      console.log(topArtists.items);
+      topArtists.items.forEach((artist) => {
+        sum += artist.popularity;
+      });
+      console.log(sum / topArtists.items.length);
+      setAverageArtistPopularity(sum / topArtists.items.length);
+    }
+  }, [topArtists]);
+
+  const getTopArtistGenres = useCallback(() => {
+    if (topArtists && topArtists.items) {
+      let genres = {};
+      topArtists.items.forEach((artist) => {
+        artist.genres.forEach((genre) => {
+          if (genres[genre]) {
+            genres[genre] += 1;
+          } else {
+            genres[genre] = 1;
+          }
+        });
+      });
+      let sortedGenres = Object.keys(genres).sort(
+        (a, b) => genres[b] - genres[a]
+      );
+      setTopArtistGenres(sortedGenres.slice(0, 5));
+    }
+  }, [topArtists]);
+
+  const getTopTrackGenres = useCallback(async () => {
+    if (session && session.accessToken && topTracks && topTracks.items) {
       const artistIds = [
         ...new Set(topTracks.items.map((item) => item.artists[0].id)),
       ].join(",");
@@ -132,12 +145,17 @@ export default function Insights() {
       let sortedGenres = Object.keys(genres).sort(
         (a, b) => genres[b] - genres[a]
       );
-      return sortedGenres.slice(0, 5);
+      setTopTrackGenres(sortedGenres.slice(0, 5));
     }
-  }
+  }, [session, topTracks]);
 
-  async function getRecentTrackGenres() {
-    if (session && session.accessToken) {
+  const getRecentTrackGenres = useCallback(async () => {
+    if (
+      session &&
+      session.accessToken &&
+      recentlyPlayed &&
+      recentlyPlayed.items
+    ) {
       const artistIds = [
         ...new Set(
           recentlyPlayed.items.map((item) => item.track.artists[0].id)
@@ -168,12 +186,12 @@ export default function Insights() {
         (a, b) => genres[b] - genres[a]
       );
       console.log(sortedGenres.slice(0, 5));
-      return sortedGenres.slice(0, 5);
+      setRecentTrackGenres(sortedGenres.slice(0, 5));
     }
-  }
+  }, [session, recentlyPlayed, setRecentTrackGenres]);
 
-  async function getTopAudioFeatures() {
-    if (session && session.accessToken) {
+  const getTopAudioFeatures = useCallback(async () => {
+    if (session && session.accessToken && topTracks && topTracks.items) {
       const trackIds = topTracks.items.map((item) => item.id).join(",");
       const response = await fetch(
         `https://api.spotify.com/v1/audio-features/?ids=${trackIds}`,
@@ -209,12 +227,17 @@ export default function Insights() {
       let sortedFeatures = Object.keys(features).sort(
         (a, b) => features[b] - features[a]
       );
-      return sortedFeatures.slice(0, 3);
+      setTopAudioFeatures(sortedFeatures.slice(0, 3));
     }
-  }
+  }, [session, topTracks, setTopAudioFeatures]);
 
-  async function getRecentAudioFeatures() {
-    if (session && session.accessToken) {
+  const getRecentAudioFeatures = useCallback(async () => {
+    if (
+      session &&
+      session.accessToken &&
+      recentlyPlayed &&
+      recentlyPlayed.items
+    ) {
       const trackIds = recentlyPlayed.items
         .map((item) => item.track.id)
         .join(",");
@@ -253,16 +276,51 @@ export default function Insights() {
         (a, b) => features[b] - features[a]
       );
       console.log(sortedFeatures.slice(0, 3));
-      return sortedFeatures.slice(0, 3);
+      setRecentAudioFeatures(sortedFeatures.slice(0, 3));
     }
-  }
+  }, [session, recentlyPlayed, setRecentAudioFeatures]);
 
   useEffect(() => {
     getProfileData();
     getTopTracks();
     getTopArtists();
     getRecentlyPlayed();
-  }, [getProfileData, getTopTracks, getTopArtists, getRecentlyPlayed]);
+  }, [
+    getProfileData,
+    getTopTracks,
+    getTopArtists,
+    getRecentlyPlayed,
+    session,
+    timeframe,
+  ]);
+
+  useEffect(() => {
+    getTrackAveragePopularity();
+  }, [getTrackAveragePopularity]);
+
+  useEffect(() => {
+    getArtistAveragePopularity();
+  }, [getArtistAveragePopularity]);
+
+  useEffect(() => {
+    getTopArtistGenres();
+  }, [getTopArtistGenres]);
+
+  useEffect(() => {
+    getTopTrackGenres();
+  }, [getTopTrackGenres]);
+
+  useEffect(() => {
+    getRecentTrackGenres();
+  }, [getRecentTrackGenres]);
+
+  useEffect(() => {
+    getTopAudioFeatures();
+  }, [getTopAudioFeatures]);
+
+  useEffect(() => {
+    getRecentAudioFeatures();
+  }, [getRecentAudioFeatures]);
 
   return (
     <main>
@@ -285,41 +343,116 @@ export default function Insights() {
               <option value="long_term">Lifetime</option>
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4 pt-10 place-items-center justify-center items-center">
             <div className="card w-96 bg-base-100 shadow-xl">
               <div className="card-body">
-                <h2 className="card-title">Card title!</h2>
-                <p>If a dog chews shoes whose shoes does he choose?</p>
+                <h2 className="card-title">
+                  Average popularity based on your top tracks:
+                </h2>
+                <p className="text-2xl font-semibold text-center text-green-500">
+                  {averageTrackPopularity}/100
+                </p>
+                <p className="text-green-500">
+                  (100 being the most popular track)
+                </p>
               </div>
             </div>
             <div className="card w-96 bg-base-100 shadow-xl">
               <div className="card-body">
-                <h2 className="card-title">Card title!</h2>
-                <p>If a dog chews shoes whose shoes does he choose?</p>
+                <h2 className="card-title">
+                  Average popularity based on your top artists:
+                </h2>
+                <p className="text-2xl font-semibold text-center text-green-500">
+                  {averageArtistPopularity}/100
+                </p>
+                <p className="text-green-500">
+                  (100 being the most popular artist)
+                </p>
               </div>
             </div>
             <div className="card w-96 bg-base-100 shadow-xl">
               <div className="card-body">
-                <h2 className="card-title">Card title!</h2>
-                <p>If a dog chews shoes whose shoes does he choose?</p>
+                <h2 className="card-title">
+                  Top Genres Based on your top tracks:
+                </h2>
+                <ol>
+                  {topTrackGenres.map((genre, index) => (
+                    <li
+                      key={index}
+                      className="text-2xl font-semibold text-center text-green-500"
+                    >
+                      {index + 1}. {genre}
+                    </li>
+                  ))}
+                </ol>
               </div>
             </div>
             <div className="card w-96 bg-base-100 shadow-xl">
               <div className="card-body">
-                <h2 className="card-title">Card title!</h2>
-                <p>If a dog chews shoes whose shoes does he choose?</p>
+                <h2 className="card-title">
+                  Top Genres Based on your top artists:
+                </h2>
+                <ol>
+                  {topArtistGenres.map((genre, index) => (
+                    <li
+                      key={index}
+                      className="text-2xl font-semibold text-center text-green-500"
+                    >
+                      {index + 1}. {genre}
+                    </li>
+                  ))}
+                </ol>
               </div>
             </div>
             <div className="card w-96 bg-base-100 shadow-xl">
               <div className="card-body">
-                <h2 className="card-title">Card title!</h2>
-                <p>If a dog chews shoes whose shoes does he choose?</p>
+                <h2 className="card-title">
+                  Top Genres Based on your recent listening history:
+                </h2>
+                <ol>
+                  {recentTrackGenres.map((genre, index) => (
+                    <li
+                      key={index}
+                      className="text-2xl font-semibold text-center text-green-500"
+                    >
+                      {index + 1}. {genre}
+                    </li>
+                  ))}
+                </ol>
               </div>
             </div>
             <div className="card w-96 bg-base-100 shadow-xl">
               <div className="card-body">
-                <h2 className="card-title">Card title!</h2>
-                <p>If a dog chews shoes whose shoes does he choose?</p>
+                <h2 className="card-title">
+                  Top Audio Features based on your top tracks:
+                </h2>
+                <ol>
+                  {topAudioFeatures.map((feature, index) => (
+                    <li
+                      key={index}
+                      className="text-2xl font-semibold text-center text-green-500"
+                    >
+                      {index + 1}. {feature}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+            <div className="card w-96 bg-base-100 shadow-xl">
+              <div className="card-body">
+                <h2 className="card-title">
+                  Top Audio Features based on your recent listening history:
+                </h2>
+                <ol>
+                  {recentAudioFeatures.map((feature, index) => (
+                    <li
+                      key={index}
+                      className="text-2xl font-semibold text-center text-green-500"
+                    >
+                      {index + 1}. {feature}
+                    </li>
+                  ))}
+                </ol>
               </div>
             </div>
           </div>
