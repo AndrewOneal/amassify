@@ -566,7 +566,7 @@ export default function Ratings() {
               </dialog>
 
               <div className="max-h-[20rem] overflow-y-auto">
-                <table className="table ">
+                <table className="table">
                   <thead>
                     <tr>
                       <th className="text-left px-12"></th>
@@ -699,6 +699,7 @@ export default function Ratings() {
           </DndContext>
         </div>
       </div>
+      <div className="h-20"></div>
     </main>
   );
 }

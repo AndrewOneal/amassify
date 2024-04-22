@@ -343,7 +343,7 @@ export default function Insights() {
               <option value="long_term">Lifetime</option>
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-4 pt-10 place-items-center justify-center items-center">
+          <div className="grid grid-cols-4 gap-8 pt-10 place-items-center justify-center items-start">
             <div className="card w-96 bg-base-100 shadow-xl">
               <div className="card-body">
                 <h2 className="card-title">
