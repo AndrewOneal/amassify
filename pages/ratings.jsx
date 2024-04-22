@@ -107,7 +107,6 @@ export default function Ratings() {
     }
   }, [session]);
 
-  // working
   const getItemsFromRanking = useCallback(
     async (itemIds, itemType) => {
       if (session && session.accessToken) {
@@ -129,7 +128,6 @@ export default function Ratings() {
     [session]
   );
 
-  // working
   function handleDragEnd(event, itemType) {
     const { active, over } = event;
 
@@ -146,7 +144,6 @@ export default function Ratings() {
     }
   }
 
-  // working
   async function updateDbItems(items, itemType) {
     const retryDelay = 1000;
     const maxRetries = 3;
@@ -170,7 +167,6 @@ export default function Ratings() {
     }
   }
 
-  // working
   async function deleteItemRating(index, itemType) {
     const setFunction = setFunctions[itemType];
 
@@ -182,7 +178,6 @@ export default function Ratings() {
     });
   }
 
-  // working
   async function searchItem(searchTerm, itemType) {
     if (session && session.accessToken && searchTerm) {
       const response = await fetch(
@@ -198,7 +193,6 @@ export default function Ratings() {
     }
   }
 
-  // working
   const handleItemClick = (itemId, itemType) => {
     const setFunction = setFunctions[itemType];
     setFunction((prevItemRatings) => {
