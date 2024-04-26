@@ -14,8 +14,11 @@ Amassify is deployed! View the application [here](https://amassify.netlify.app/)
 
 2. Next, you will need a .env.local file. You can either set this up with your own Spotify API client ID and secret. If you are Dr. Cho grading this project for ASE485, I have included a .env.local file for you in the zip submission for you to use. The format for the file is:
 > SPOTIFY_CLIENT_ID=spotifyclientid
+
 > SPOTIFY_SECRET=spotifysecret
+
 > JWT_SECRET=secretencodingstring
+
 > NEXTAUTH_URL=http://localhost:3000/
 
 3. Make sure you have next.js installed, refer to the [official documentation](https://nextjs.org/docs/getting-started/installation) for installation instructions.
