@@ -17,7 +17,7 @@ Welcome to Amassify, your personalized music data aggregator that seamlessly int
 - Log in to Amassify using you Spotify account credentials, ensuring a seamless experience without the hassle of creating a new account.
 
 ### Profile Page <a name="profile-page"></a>
-- The profile page displays your Spotify account information, including profile picture and username.
+- The profile page displays your Spotify account information, including profile picture and username. It also functions as the home page of the application.
 - Users can view their top tracks and top artists in a scrollable table.
 - Use the timeframe dropdown under the profile information to switch between different time frames for your data.
   
